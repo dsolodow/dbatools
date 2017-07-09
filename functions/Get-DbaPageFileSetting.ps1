@@ -1,4 +1,4 @@
-﻿Function Get-DbaPageFileSetting
+Function Get-DbaPageFileSetting
 {
 <#
 .SYNOPSIS
@@ -19,6 +19,7 @@ This can be the name of a computer, a SMO object, an IP address or a SQL Instanc
 Credential object used to connect to the Computer as a different user
 
 .NOTES
+Tags: CIM
 Author: Klaas Vandenberghe ( @PowerDBAKlaas )
 
 dbatools PowerShell module (https://dbatools.io)
@@ -148,7 +149,7 @@ Returns a custom object displaying ComputerName, AutoPageFile, FileName, Status,
 					CurrentUsage = $null
 				} | Select-DefaultView -Property ComputerName, AutoPageFile
 			}
-			if ( $CIMsession ) { Remove-CimSession $CIMsession }
+			if ( [void]$CIMsession.TestConnection() ) { Remove-CimSession $CIMsession }
 		}
 	}
 }

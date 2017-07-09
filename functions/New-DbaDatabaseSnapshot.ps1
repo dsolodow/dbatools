@@ -1,4 +1,4 @@
-﻿Function New-DbaDatabaseSnapshot
+Function New-DbaDatabaseSnapshot
 {
 <#
 .SYNOPSIS
@@ -40,6 +40,7 @@ NB: You can't then restore the Database from the newly-created snapshot.
 For details, check https://msdn.microsoft.com/en-us/library/bb895334.aspx
 
 .NOTES
+Tags: DisasterRecovery, Snapshot, Restore
 Author: niphlod
 
 dbatools PowerShell module (https://dbatools.io)
@@ -272,7 +273,7 @@ Creates snapshots for HR and Accounting databases, storing files under the F:\sn
 							$CustomFileStructure[$fg.Name] += @{ 'name' = $file.name; 'filename' = $fname }
 						}
 					}
-					$SnapDB = New-Object -TypeName Microsoft.SqlServer.Management.Smo.Database -ArgumentList $instance, $Snapname
+					$SnapDB = New-Object -TypeName Microsoft.SqlServer.Management.Smo.Database -ArgumentList $server, $Snapname
 					$SnapDB.DatabaseSnapshotBaseName = $db.Name
 					foreach ($fg in $CustomFileStructure.Keys)
 					{

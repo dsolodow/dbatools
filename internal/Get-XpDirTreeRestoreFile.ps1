@@ -18,33 +18,44 @@ Takes path, checks for validity. Scans for usual backup file
         [System.Management.Automation.PSCredential]$SqlCredential
     )
        
-        $FunctionName = "Get-XpDirTreeRestoreFile"
+        $FunctionName =(Get-PSCallstack)[0].Command
         
         Write-Verbose "$FunctionName - Starting"
         Write-Verbose "$FunctionName - Checking Path"
-        Try 
-        {
-            $srv = Connect-SQLServer -SqlServer $SqlServer -SqlCredential $SqlCredential
-        }
-        Catch
-        {
-            throw $_
-        }
+		try 
+		{
+			if ($sqlServer -isnot [Microsoft.SqlServer.Management.Smo.SqlSmoObject])
+			{
+				Write-verbose "$FunctionName - Opening SQL Server connection"
+				$NewConnection = $True
+				$Server = Connect-SqlServer -SqlServer $SqlServer -SqlCredential $SqlCredential	
+			}
+			else
+			{
+				Write-Verbose "$FunctionName - reusing SMO connection"
+				$server = $SqlServer
+			}
+		}
+		catch {
+
+			Write-Warning "$FunctionName - Cannot connect to $SqlServer" 
+			break
+		}
 
         if ($Path[-1] -ne "\")
         {
             $Path = $Path + "\"
         }
-        If (!(Test-SqlPath -SQLServer $sqlserver -SqlCredential $SqlCredential -path $path))
+        If (!(Test-SqlPath -SQLServer $server -SqlCredential $SqlCredential -path $path))
         {
-            Throw "$FunctionName - SQLServer $sqlserver cannot access $path"
+            Write-warning "$FunctionName - SQLServer $sqlserver cannot access $path"
         }
         $query = "EXEC master.sys.xp_dirtree '$Path',1,1;"
-        $queryResult = Invoke-Sqlcmd2 -ServerInstance $sqlServer -Credential $SqlCredential -Database tempdb -Query $query
+        $queryResult = Invoke-Sqlcmd2 -ServerInstance $server -Credential $SqlCredential -Database tempdb -Query $query
         #$queryresult
         $dirs = $queryResult | where-object { $_.file -eq 0 }
         $Results = @()
-              $Results += $queryResult | where-object { $_.file -eq 1 } | Select @{Name="FullName";Expression={$PATH+$_."Subdirectory"}}
+              $Results += $queryResult | where-object { $_.file -eq 1 } | Select-Object @{Name="FullName";Expression={$PATH+$_."Subdirectory"}}
   
         ForEach ($d in $dirs) 
         {

@@ -124,9 +124,9 @@ Changes the schedule for Job1 with the name 'daily' to enabled on multiple serve
     param (
         [parameter(Mandatory = $true, ValueFromPipeline = $true)]
         [Alias("ServerInstance", "SqlServer")]
-        [object[]]$SqlInstance,
+        [DbaInstanceParameter[]]$SqlInstance,
         [Parameter(Mandatory = $false)]
-        [System.Management.Automation.PSCredential]$SqlCredential,
+        [PSCredential][System.Management.Automation.CredentialAttribute()]$SqlCredential,
         [Parameter(Mandatory = $true, ValueFromPipeline = $true)]
         [ValidateNotNullOrEmpty()]
         [object[]]$Job,
@@ -149,7 +149,8 @@ Changes the schedule for Job1 with the name 'daily' to enabled on multiple serve
         [Parameter(Mandatory = $false)]
         [int]$FrequencySubdayInterval,
         [Parameter(Mandatory = $false)]
-        [int]$FrequencyRelativeInterval,
+        [ValidateSet('Unused','First','Second','Third','Fourth','Last')]
+		[object]$FrequencyRelativeInterval,
         [Parameter(Mandatory = $false)]
         [int]$FrequencyRecurrenceFactor,
         [Parameter(Mandatory = $false)]
@@ -272,7 +273,7 @@ Changes the schedule for Job1 with the name 'daily' to enabled on multiple serve
 
         # Check of the relative FrequencyInterval value is of type string and set the integer value
         if (($FrequencyRelativeInterval -notin 1, 2, 4, 8, 16) -and $FrequencyRelativeInterval -ne $null) {
-            [int]$FrequencyRelativeInterval = switch ($FrequencyRelativeInterval) { "First" { 1 } "Second" { 2 } "Third" { 4 } "Fourth" { 8 } "Last" { 16 } }
+            [int]$FrequencyRelativeInterval = switch ($FrequencyRelativeInterval) { "First" { 1 } "Second" { 2 } "Third" { 4 } "Fourth" { 8 } "Last" { 16 } "Unused" { 0 } default { 0 }}
         }
 
         # Check if the interval is valid
@@ -325,10 +326,10 @@ Changes the schedule for Job1 with the name 'daily' to enabled on multiple serve
                 # Try connecting to the instance
                 Write-Message -Message "Attempting to connect to $instance" -Level Output
                 try {
-                    $Server = Connect-SqlServer -SqlServer $instance -SqlCredential $SqlCredential
+                    $Server = Connect-SqlInstance -SqlInstance $instance -SqlCredential $SqlCredential
                 }
                 catch {
-                    Stop-Function -Message "Could not connect to Sql Server instance $instance" -Target $instance -InnerErrorRecord $_ -Continue
+                    Stop-Function -Message "Failure" -Category ConnectionError -ErrorRecord $_ -Target $instance -Continue
                 }
 
                 # Check if the job exists

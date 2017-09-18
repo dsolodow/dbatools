@@ -76,7 +76,7 @@
 
 		.NOTES
 			Tags: Database
-			Original Author: Garry Bargsley (@gbargsley | http://blog.garrybargsley.com)
+			Author: Garry Bargsley (@gbargsley | http://blog.garrybargsley.com)
             Author: Klaas Vandenberghe ( @PowerDbaKlaas )
             Author: Simone Bizzotto ( @niphlod )
 
@@ -263,7 +263,7 @@
 			}
 			
 			if ($NoFullBackup -or $NoFullBackupSince) {
-				$dabs = (Get-DbaBackupHistory -SqlInstance $server -LastFull -IgnoreCopyOnly)
+				$dabs = (Get-DbaBackupHistory -SqlInstance $server -LastFull )
 				if ($null -ne $NoFullBackupSince) {
 					$dabsWithinScope = ($dabs | Where-Object End -lt $NoFullBackupSince)
 					
@@ -275,7 +275,7 @@
 				
 			}
 			if ($NoLogBackup -or $NoLogBackupSince) {
-				$dabs = (Get-DbaBackupHistory -SqlInstance $server -LastLog -IgnoreCopyOnly)
+				$dabs = (Get-DbaBackupHistory -SqlInstance $server -LastLog )
 				if ($null -ne $NoLogBackupSince) {
 					$dabsWithinScope = ($dabs | Where-Object End -lt $NoLogBackupSince)
 					$inputobject = $inputobject |

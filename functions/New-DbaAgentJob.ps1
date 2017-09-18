@@ -89,7 +89,7 @@ Prompts you for confirmation before executing any changing operations within the
 Use this switch to disable any kind of verbose messages
 
 .NOTES 
-Original Author: Sander Stad (@sqlstad, sqlstad.nl)
+Author: Sander Stad (@sqlstad, sqlstad.nl)
 Tags: Agent, Job, Job Step
 	
 Website: https://dbatools.io
@@ -221,7 +221,7 @@ Creates a job with the name "Job One" on multiple servers using the pipe line
 			# Try connecting to the instance
 			Write-Message -Message "Attempting to connect to $instance" -Level Verbose
 			try {
-				$server = Connect-SqlInstance -SqlInstance $instance -SqlCredential $SqlCredential
+				$server = Connect-DbaSqlServer -SqlInstance $instance -SqlCredential $SqlCredential
 			}
 			catch {
 				Stop-Function -Message "Failure" -Category ConnectionError -ErrorRecord $_ -Target $instance -Continue

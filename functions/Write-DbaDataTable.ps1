@@ -85,6 +85,7 @@ function Write-DbaDataTable {
 			If this switch is enabled, the internal messaging functions will be silenced.
 
 		.NOTES
+			Tags: DataTable, Insert
 			Website: https://dbatools.io
 			Copyright: (C) Chrissy LeMaire, clemaire@gmail.com
 			License: GNU GPL v3 https://opensource.org/licenses/GPL-3.0
@@ -221,16 +222,16 @@ function Write-DbaDataTable {
 			$table = $Table.Split(".")[2]
 		}
 
-		if ($Database -match "\[.*\]"){
-			$Database = ($Database -replace '\[','') -replace '\]',''
+		if ($Database -match "\[.*\]") {
+			$Database = ($Database -replace '\[', '') -replace '\]', ''
 		}
 
-		if ($Schema -match "\[.*\]"){
-			$Schema = ($Schema -replace '\[','') -replace '\]',''
+		if ($Schema -match "\[.*\]") {
+			$Schema = ($Schema -replace '\[', '') -replace '\]', ''
 		}
 
-		if ($table -match "\[.*\]"){
-			$table = ($table -replace '\[','') -replace '\]',''
+		if ($table -match "\[.*\]") {
+			$table = ($table -replace '\[', '') -replace '\]', ''
 		}
 
 		$fqtn = "[$Database].[$Schema].[$table]"
@@ -263,16 +264,15 @@ function Write-DbaDataTable {
 			return
 		}
 
-		$bulkCopyOptions = @()
+		$bulkCopyOptions = 0
 		$options = "TableLock", "CheckConstraints", "FireTriggers", "KeepIdentity", "KeepNulls", "Default", "Truncate"
 
 		foreach ($option in $options) {
 			$optionValue = Get-Variable $option -ValueOnly -ErrorAction SilentlyContinue
 			if ($optionValue -eq $true) {
-				$bulkCopyOptions += "$option"
+				$bulkCopyOptions += $([Data.SqlClient.SqlBulkCopyOptions]::$option).value__
 			}
 		}
-		$bulkCopyOptions = $bulkCopyOptions -join " & "
 
 		if ($truncate -eq $true) {
 			if ($Pscmdlet.ShouldProcess($SqlInstance, "Truncating $fqtn")) {
@@ -286,7 +286,7 @@ function Write-DbaDataTable {
 			}
 		}
 
-		$bulkCopy = New-Object Data.SqlClient.SqlBulkCopy("$($server.ConnectionContext.ConnectionString);Database=$Database")
+		$bulkCopy = New-Object Data.SqlClient.SqlBulkCopy("$($server.ConnectionContext.ConnectionString);Database=$Database", $bulkCopyOptions)
 		$bulkCopy.DestinationTableName = $fqtn
 		$bulkCopy.BatchSize = $BatchSize
 		$bulkCopy.NotifyAfter = $NotifyAfter
@@ -351,7 +351,7 @@ function Write-DbaDataTable {
 
 		$validTypes = @([System.Data.DataSet], [System.Data.DataTable], [System.Data.DataRow], [System.Data.DataRow[]])
 
-			if ($InputObject.GetType() -notin $validTypes) {
+		if ($InputObject.GetType() -notin $validTypes) {
 			Stop-Function -Message "Data is not of the right type (DbDataReader, DataTable, DataRow, or IDataReader). Tip: Try using Out-DbaDataTable to convert the object first."
 			return
 		}
@@ -369,7 +369,7 @@ function Write-DbaDataTable {
 				return
 			}
 			else {
-				if ($schema -notin $server.Databases[0].Schemas.Name) {
+				if ($schema -notin $db.Schemas.Name) {
 					Stop-Function -Message "Schema does not exist."
 					return
 				}
@@ -416,7 +416,7 @@ function Write-DbaDataTable {
 
 				Write-Message -Level Debug -Message $sql
 
-					if ($Pscmdlet.ShouldProcess($SqlInstance, "Creating table $fqtn")) {
+				if ($Pscmdlet.ShouldProcess($SqlInstance, "Creating table $fqtn")) {
 					try {
 						$null = $server.Databases[$Database].Query($sql)
 					}
@@ -428,7 +428,7 @@ function Write-DbaDataTable {
 			}
 		}
 
-			$rowCount = $InputObject.Rows.Count
+		$rowCount = $InputObject.Rows.Count
 		if ($rowCount -eq 0) {
 			$rowCount = 1
 		}

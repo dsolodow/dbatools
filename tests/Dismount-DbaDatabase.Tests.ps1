@@ -12,7 +12,7 @@ Describe "$commandname Integration Tests" -Tags "IntegrationTests" {
 		# Setting up variables names. If you want them to persist between all of the pester blocks, they can be moved outside
 		$dbname = "dbatoolsci_detachattach"
 		# making room in the remote case a db with the same name exists
-		$null = Get-DbaDatabase -SqlInstance $script:instance2 -Database $dbname | Remove-DbaDatabase
+		$null = Get-DbaDatabase -SqlInstance $script:instance2 -Database $dbname | Remove-DbaDatabase -Confirm:$false
 		# restoring from the "common test data" (see https://github.com/sqlcollaborative/appveyor-lab)
 		$null = Restore-DbaDatabase -SqlInstance $script:instance2 -Path C:\github\appveyor-lab\detachattach\detachattach.bak -DatabaseName $dbname -WithReplace
 		
@@ -28,7 +28,7 @@ Describe "$commandname Integration Tests" -Tags "IntegrationTests" {
 	AfterAll {
 		# this gets executed always (think "finally" in try/catch/finally) and it's the best place for final cleanups
 		$null = Attach-DbaDatabase -SqlInstance $script:instance2 -Database $dbname -FileStructure $script:fileStructure
-		$null = Get-DbaDatabase -SqlInstance $script:instance2 -Database $dbname | Remove-DbaDatabase
+		$null = Get-DbaDatabase -SqlInstance $script:instance2 -Database $dbname | Remove-DbaDatabase -Confirm:$false
 	}
 	
 	# Actual tests
@@ -50,7 +50,7 @@ Describe "$commandname Integration Tests" -Tags "IntegrationTests" {
 	}
 	Context "Database Detachment" {
 		BeforeAll {
-			$server = Connect-DbaSqlServer -SqlInstance $script:instance2
+			$server = Connect-DbaInstance -SqlInstance $script:instance2
 			$db1 = "dbatoolsci_dbsetstate_detached"
 			$db2 = "dbatoolsci_dbsetstate_detached_withSnap"
 			$server.Query("CREATE DATABASE $db1")
@@ -65,8 +65,9 @@ Describe "$commandname Integration Tests" -Tags "IntegrationTests" {
 		AfterAll {
 			$null = Remove-DbaDatabaseSnapshot -SqlInstance $script:instance2 -Database $db2 -Force
 			$null = Attach-DbaDatabase -SqlInstance $script:instance2 -Database $db1 -FileStructure $fileStructure
-			$null = Get-DbaDatabase -SqlInstance $script:instance2 -Database $db1, $db2 | Remove-DbaDatabase
+			$null = Get-DbaDatabase -SqlInstance $script:instance2 -Database $db1, $db2 | Remove-DbaDatabase -Confirm:$false
 		}
+		
 		It "Skips detachment if database is snapshotted" {
 			$result = Dismount-DbaDatabase -SqlInstance $script:instance2 -Database $db2 -Force -WarningAction SilentlyContinue -WarningVariable warn
 			$result | Should Be $null
@@ -74,9 +75,9 @@ Describe "$commandname Integration Tests" -Tags "IntegrationTests" {
 			$result = Get-DbaDatabase -SqlInstance $script:instance2 -Database $db2
 			$result | Should Not Be $null
 		}
+		$null = Stop-DbaProcess -SqlInstance $script:instance2 -Database $db1
+		$result = Dismount-DbaDatabase -SqlInstance $script:instance2 -Database $db1
 		It "Detaches the database correctly" {
-			$null = Stop-DbaProcess -SqlInstance $script:instance2 -Database $db1
-			$result = Dismount-DbaDatabase -SqlInstance $script:instance2 -Database $db1
 			$result = Get-DbaDatabase -SqlInstance $script:instance2 -Database $db1
 			$result | Should Be $null
 		}

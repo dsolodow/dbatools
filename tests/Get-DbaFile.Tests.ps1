@@ -5,13 +5,13 @@ Write-Host -Object "Running $PSCommandpath" -ForegroundColor Cyan
 Describe "$commandname Integration Tests" -Tags "IntegrationTests" {
 	Context "Returns some files" {
 		BeforeAll {
-			$server = Connect-DbaSqlServer -SqlInstance $script:instance2
+			$server = Connect-DbaInstance -SqlInstance $script:instance2
 			$random = Get-Random
 			$db = "dbatoolsci_getfile$random"
 			$server.Query("CREATE DATABASE $db")
 		}
 		AfterAll {
-			$null = Get-DbaDatabase -SqlInstance $script:instance2 -Database $db | Remove-DbaDatabase
+			$null = Get-DbaDatabase -SqlInstance $script:instance2 -Database $db | Remove-DbaDatabase -Confirm:$false
 		}
 		
 		$results = Get-DbaFile -SqlInstance $script:instance2

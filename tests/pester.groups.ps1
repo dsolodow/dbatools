@@ -2,9 +2,9 @@
 
 $TestsRunGroups = @{
 	# run on scenario 2008R2
-	"2008R2" = @(
+	"2008R2"            = @(
 		'Add-DbaComputerCertificate',
-		'Connect-DbaSqlServer',
+		'Connect-DbaInstance',
 		'Get-DbaAgentJobs',
 		'Get-DbaAgentJobOutputFile',
 		'Get-DbaBackupHistory',
@@ -20,18 +20,16 @@ $TestsRunGroups = @{
 		'Get-DbaSpConfigure',
 		'Get-DbaSqlLog',
 		'Get-DbaSqlModule',
-		'Get-DbaSqlService',
 		'Invoke-DbaCycleErrorLog',
 		'Invoke-DbaDiagnosticQuery',
 		'Mount-DbaDatabase',
-		'Remove-DbaDatabase',
+		'Remove-DbaDatabase -Confirm:$false',
 		'Restore-DbaDatabase',
 		'Set-DbaSpConfigure',
 		'Test-DbaIdentityUsage'
 	)
 	# run on scenario 2016
-	"2016" = @(
-		'Dismount-DbaDatabase',
+	"2016"              = @(
 		'Get-DbaAgDatabase',
 		'Get-DbaAgHadr',
 		'Get-DbaAgReplica',
@@ -52,10 +50,20 @@ $TestsRunGroups = @{
 		'Test-DbaDbCompression',
 		'Test-DbaLastBackup'
 	)
+	#run on scenario 2016_service - SQL Server service tests that might disrupt other tests
+	"2016_service" = @(
+		'Start-DbaSqlService',
+		'Stop-DbaSqlService',
+		'Restart-DbaSqlService',
+		'Get-DbaSqlService',
+		'Update-DbaSqlServiceAccount'
+	)
 	# do not run on appveyor
 	"appveyor_disabled" = @(
-		'Get-DbaDatabaseState'
+		'Get-DbaDatabaseState',
+		'Dismount-DbaDatabase'
 	)
+	
 	# do not run everywhere
-	"disabled" = @()
+	"disabled"          = @()
 }

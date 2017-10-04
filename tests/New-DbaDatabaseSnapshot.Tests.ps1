@@ -32,7 +32,7 @@ Describe "$CommandName Integration Tests" -Tags "IntegrationTests" {
 	}
 	Context "Operations on databases" {
 		BeforeAll {
-			$server = Connect-DbaSqlServer -SqlInstance $script:instance2
+			$server = Connect-DbaInstance -SqlInstance $script:instance2
 			$db1 = "dbatoolsci_SnapMe"
 			$db2 = "dbatoolsci_SnapMe2"
 			$db3 = "dbatoolsci_SnapMe3_Offline"
@@ -50,7 +50,7 @@ Describe "$CommandName Integration Tests" -Tags "IntegrationTests" {
 		}
 		AfterAll {
 			Remove-DbaDatabaseSnapshot -SqlInstance $script:instance2 -Database $db1,$db2,$db3 -Force
-			Remove-DbaDatabase -SqlInstance $script:instance2 -Database $db1,$db2,$db3
+			Remove-DbaDatabase -Confirm:$false -SqlInstance $script:instance2 -Database $db1,$db2,$db3
 		}
 
 		if ($setupright) {

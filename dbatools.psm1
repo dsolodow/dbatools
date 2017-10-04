@@ -29,8 +29,8 @@ foreach ($smoversion in "13.0.0.0", "12.0.0.0") {
 }
 
 $assemblies = "Management.Common", "Dmf", "Instapi", "SqlWmiManagement", "ConnectionInfo", "SmoExtended", "SqlTDiagM", "Management.Utility",
-"SString", "Management.RegisteredServers", "Management.Sdk.Sfc", "SqlEnum", "RegSvrEnum", "WmiEnum", "ServiceBrokerEnum", "Management.XEvent",
-"ConnectionInfoExtended", "Management.Collector", "Management.CollectorEnum", "Management.Dac", "Management.DacEnum", "Management.IntegrationServices"
+"SString", "Management.RegisteredServers", "Management.Sdk.Sfc", "SqlEnum", "RegSvrEnum", "WmiEnum", "ServiceBrokerEnum", "Management.XEvent", "XEvent.Linq"
+"ConnectionInfoExtended", "Management.Collector", "Management.CollectorEnum", "Management.Dac", "Management.DacEnum", "Management.IntegrationServices", "XE.Core"
 
 foreach ($assembly in $assemblies) {
 	try {
@@ -64,6 +64,8 @@ if ($smoadded -eq $false) {
 	Add-Type -Path "$script:PSModuleRoot\bin\smo\Microsoft.SqlServer.Management.XEventDbScopedEnum.dll"
 	Add-Type -Path "$script:PSModuleRoot\bin\smo\Microsoft.SqlServer.Management.XEventEnum.dll"
 	Add-Type -Path "$script:PSModuleRoot\bin\smo\Microsoft.SqlServer.Management.Collector.dll"
+	Add-Type -Path "$script:PSModuleRoot\bin\smo\Microsoft.SqlServer.XE.Core.dll"
+	Add-Type -Path "$script:PSModuleRoot\bin\smo\Microsoft.SqlServer.XEvent.Linq.dll"
 }
 <# 
 
@@ -84,6 +86,9 @@ else {
 	$ExecutionContext.InvokeCommand.InvokeScript($false, ([scriptblock]::Create([io.file]::ReadAllText("$script:PSModuleRoot\bin\library.ps1"))), $null, $null)
 	$ExecutionContext.InvokeCommand.InvokeScript($false, ([scriptblock]::Create([io.file]::ReadAllText("$script:PSModuleRoot\bin\typealiases.ps1"))), $null, $null)
 }
+
+# Tell the library where the module is based, just in case
+[Sqlcollaborative.Dbatools.dbaSystem.SystemHost]::ModuleBase = $script:PSModuleRoot
 
 # All internal functions privately available within the toolset - 221ms
 foreach ($function in (Get-ChildItem "$script:PSModuleRoot\internal\*.ps1")) {
@@ -144,6 +149,10 @@ else { $ExecutionContext.InvokeCommand.InvokeScript($false, ([scriptblock]::Crea
 if ($script:doDotSource) { . "$script:PSModuleRoot\internal\scripts\updateTeppAsync.ps1" }
 else { $ExecutionContext.InvokeCommand.InvokeScript($false, ([scriptblock]::Create([io.file]::ReadAllText("$script:PSModuleRoot\internal\scripts\updateTeppAsync.ps1"))), $null, $null) }
 
+# Start the maintenance system (requires pretty much everything else already up and running)
+if ($script:doDotSource) { . "$script:PSModuleRoot\internal\scripts\dbatools-maintenance.ps1" }
+else { $ExecutionContext.InvokeCommand.InvokeScript($false, ([scriptblock]::Create([io.file]::ReadAllText("$script:PSModuleRoot\internal\scripts\dbatools-maintenance.ps1"))), $null, $null) }
+
 # I renamed this function to be more accurate - 1ms
 if (-not (Test-Path Alias:Copy-SqlAgentCategory)) { Set-Alias -Scope Global -Name Copy-SqlAgentCategory -Value Copy-DbaAgentCategory }
 if (-not (Test-Path Alias:Copy-SqlAlert)) { Set-Alias -Scope Global -Name Copy-SqlAlert -Value Copy-DbaAgentAlert }
@@ -182,7 +191,8 @@ if (-not (Test-Path Alias:Export-SqlUser)) { Set-Alias -Scope Global -Name Expor
 if (-not (Test-Path Alias:Find-SqlDuplicateIndex)) { Set-Alias -Scope Global -Name Find-SqlDuplicateIndex -Value Find-DbaDuplicateIndex }
 if (-not (Test-Path Alias:Find-SqlUnusedIndex)) { Set-Alias -Scope Global -Name Find-SqlUnusedIndex -Value Find-DbaUnusedIndex }
 if (-not (Test-Path Alias:Get-SqlMaxMemory)) { Set-Alias -Scope Global -Name Get-SqlMaxMemory -Value Get-DbaMaxMemory }
-if (-not (Test-Path Alias:Get-SqlRegisteredServerName)) { Set-Alias -Scope Global -Name Get-SqlRegisteredServerName -Value Get-DbaRegisteredServerName }
+if (-not (Test-Path Alias:Get-SqlRegisteredServerName)) { Set-Alias -Scope Global -Name Get-SqlRegisteredServerName -Value Get-DbaRegisteredServer }
+if (-not (Test-Path Alias:Get-DbaRegisteredServerName)) { Set-Alias -Scope Global -Name Get-DbaRegisteredServerName -Value Get-DbaRegisteredServer }
 if (-not (Test-Path Alias:Get-SqlServerKey)) { Set-Alias -Scope Global -Name Get-SqlServerKey -Value Get-DbaSqlProductKey }
 if (-not (Test-Path Alias:Import-SqlSpConfigure)) { Set-Alias -Scope Global -Name Import-SqlSpConfigure -Value Import-DbaSpConfigure }
 if (-not (Test-Path Alias:Install-SqlWhoIsActive)) { Set-Alias -Scope Global -Name Install-SqlWhoIsActive -Value Install-DbaWhoIsActive }
@@ -213,6 +223,9 @@ if (-not (Test-Path Alias:Restore-HallengrenBackup)) { Set-Alias -Scope Global -
 if (-not (Test-Path Alias:Get-DbaDatabaseFreeSpace)) { Set-Alias -Scope Global -Name Get-DbaDatabaseFreeSpace -Value Get-DbaDatabaseSpace }
 if (-not (Test-Path Alias:Set-DbaQueryStoreConfig)) { Set-Alias -Scope Global -Name Set-DbaQueryStoreConfig -Value Set-DbaDbQueryStoreOptions }
 if (-not (Test-Path Alias:Get-DbaQueryStoreConfig)) { Set-Alias -Scope Global -Name Get-DbaQueryStoreConfig -Value Get-DbaDbQueryStoreOptions }
+if (-not (Test-Path Alias:Get-DbaXEventsSession)) { Set-Alias -Scope Global -Name Get-DbaXEventsSession -Value Get-DbaXEventSession }
+if (-not (Test-Path Alias:Connect-DbaSqlServer)) { Set-Alias -Scope Global -Name Connect-DbaSqlServer -Value Connect-DbaInstance }
+if (-not (Test-Path Alias:Get-DbaInstance)) { Set-Alias -Scope Global -Name Get-DbaInstance -Value Connect-DbaInstance }
 
 # Leave forever
 Set-Alias -Scope Global -Name Attach-DbaDatabase -Value Mount-DbaDatabase
@@ -221,8 +234,8 @@ Set-Alias -Scope Global -Name Detach-DbaDatabase -Value Dismount-DbaDatabase
 # SIG # Begin signature block
 # MIIcYgYJKoZIhvcNAQcCoIIcUzCCHE8CAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUifZ2YCmZ4TgPVc0M/2UEIAsq
-# 0z+ggheRMIIFGjCCBAKgAwIBAgIQAsF1KHTVwoQxhSrYoGRpyjANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUHw6QSwpvPEdlMlHaIMmvPeDH
+# HdKggheRMIIFGjCCBAKgAwIBAgIQAsF1KHTVwoQxhSrYoGRpyjANBgkqhkiG9w0B
 # AQsFADByMQswCQYDVQQGEwJVUzEVMBMGA1UEChMMRGlnaUNlcnQgSW5jMRkwFwYD
 # VQQLExB3d3cuZGlnaWNlcnQuY29tMTEwLwYDVQQDEyhEaWdpQ2VydCBTSEEyIEFz
 # c3VyZWQgSUQgQ29kZSBTaWduaW5nIENBMB4XDTE3MDUwOTAwMDAwMFoXDTIwMDUx
@@ -353,22 +366,22 @@ Set-Alias -Scope Global -Name Detach-DbaDatabase -Value Dismount-DbaDatabase
 # c3N1cmVkIElEIENvZGUgU2lnbmluZyBDQQIQAsF1KHTVwoQxhSrYoGRpyjAJBgUr
 # DgMCGgUAoHgwGAYKKwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMx
 # DAYKKwYBBAGCNwIBBDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkq
-# hkiG9w0BCQQxFgQUk5GqSsldkpPgNr5T/nubCy03pYswDQYJKoZIhvcNAQEBBQAE
-# ggEALxTqyiJkyqYftnW1BGnOee6eLTH54PS3BYof6NXaix5y/a7zdMDRzwju4BX4
-# /5IyyLprXaAspQ8nr0jPhZrwDAfGhj0OREJaybymUV3vTVZ/3Qis2+1hg5Se+LJ/
-# kMKNkd/BIC/tGEF9UcidpF8mqtAVeirkDKc4qi47NjYBVmLRef9FjEFiY9Fs8AFh
-# HTiDyNRqZro6xU0EpybL/dOl5d/9Psg7TRinmix7g+Ql6HHFk9fmT8hGRp5pBGAq
-# 9G6Cty2qk3GH8T5Wa5WvTHsKFmSeJA/15wYzRqowBKLHElxk/4SegipBCFz3oa5/
-# Izkaj0uD6LxftZS912d00WJEvqGCAg8wggILBgkqhkiG9w0BCQYxggH8MIIB+AIB
+# hkiG9w0BCQQxFgQU4B2U/4vfnt+u+LKu0SfjDcNoIH8wDQYJKoZIhvcNAQEBBQAE
+# ggEAElkt6EpTgVfNF1IpFZfBKTXf23q/ZSq64zugTod5GZcPtnGfakL7vOrZjwJi
+# Jbe38FsNbp6SZm5uEE6nBRO2fkWbZPQsX1asV79/QrwBAVyL2rwtr5pAB2tFDJUp
+# DFb8tKA7jhvWFDN3yUFVBqUjZAdg8H+HPHOCHkyIGzRXbjiRlTnLNpqkwa1DOriO
+# K9X0oLhbJzsQaP1CRVzw2tSb43HfWdDHoZvsddrFcY8Dq79WKHLTQ/hkDDBvqFI6
+# yuNkIdYyoXnfsV0EFFpLNqZ9KAE7LvAaoP0BYwzyMHyzLEM7mto3koWmWRL7t7YP
+# MvZzbRG1EIVCDm7Mv89zWPAWvaGCAg8wggILBgkqhkiG9w0BCQYxggH8MIIB+AIB
 # ATB2MGIxCzAJBgNVBAYTAlVTMRUwEwYDVQQKEwxEaWdpQ2VydCBJbmMxGTAXBgNV
 # BAsTEHd3dy5kaWdpY2VydC5jb20xITAfBgNVBAMTGERpZ2lDZXJ0IEFzc3VyZWQg
 # SUQgQ0EtMQIQAwGaAjr/WLFr1tXq5hfwZjAJBgUrDgMCGgUAoF0wGAYJKoZIhvcN
-# AQkDMQsGCSqGSIb3DQEHATAcBgkqhkiG9w0BCQUxDxcNMTcwOTE0MjIzOTI3WjAj
-# BgkqhkiG9w0BCQQxFgQUs9VBLI5xTxrVV1hgc70LhKHMmmMwDQYJKoZIhvcNAQEB
-# BQAEggEAJt38RE1rh38vNAJDD4jY9k9wZScFbmRjInuB7PUs8ilsVklcF5CvCTwo
-# tQc9sYh2dJ0plhjrsXSsGe/JYZ+bDw6/iIG+ibQ2KMBc4Itda8rai/HCfnrzk5Ds
-# +PeXP1Wer+CHhFHfYhIUBpUjTIKaWidIIcnB0LS5mA+5pUeXugWWH35115Ex05IQ
-# L9IPVljIN4RS0uG0gQCmZL0XNWhrLUcQb5KZ83RPmq6Ojmes4ia/w9AL/epCxNZs
-# /EyAdJOl+JJl64s3eD3VYtcwfWY/UmYYZuCvDTHBq0Xgzil2rcUKdttAnMoo4ZZj
-# SFprVuutCuZdZb6CpRC1EsPUuRsrVg==
+# AQkDMQsGCSqGSIb3DQEHATAcBgkqhkiG9w0BCQUxDxcNMTcxMDA0MjAxMDA0WjAj
+# BgkqhkiG9w0BCQQxFgQU5XsdSLiIQG/97LQFJv1QISJ5XVMwDQYJKoZIhvcNAQEB
+# BQAEggEAED7ruil2cJ3teSJjX/miMa+6u4ChRqHVEUFVwQYTu8aw67PBsuEUkopV
+# LvXgvcLt5ToIvvS/ZxEhud4pVXaM7GvO1pxXWGY3PJAQgdKh6MV3b1yz7VqGmOL4
+# uZ+3DUQQ61KavDLI938ishYZQRtpEpQcIKAu88LFV0wCNk+8/cJ7T0FucxI9bR4A
+# OMpNcLqVZXevIHXDMr7b1+A4B24Wp7ydF+2LMvLuNvUwTuaBYnxzxFY6ntgUbVl7
+# gs6uwkgnF0v0POWTAyLYZnVQV7HUwXw1UfTsFKbCP/VYm55WjDY2G1FOakcYGaS1
+# 2EPpKS2pFb1i8z62Ak3epNBNdAfOkQ==
 # SIG # End signature block

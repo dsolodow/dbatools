@@ -11,7 +11,7 @@
 	RootModule			    = 'dbatools.psm1'
 	
 	# Version number of this module.
-	ModuleVersion		    = '0.9.44'
+	ModuleVersion		    = '0.9.63'
 	
 	# ID used to uniquely identify this module
 	GUID				    = '9d139310-ce45-41ce-8e8b-d76335aa1789'
@@ -108,7 +108,7 @@
 		'Watch-DbaDbLogin',
 		'Expand-DbaTLogResponsibly',
 		'Test-DbaMigrationConstraint',
-		'Get-DbaRegisteredServerName',
+		'Get-DbaRegisteredServer',
 		'Test-DbaNetworkLatency',
 		'Find-DbaDuplicateIndex',
 		'Show-DbaServerFileSystem',
@@ -151,7 +151,7 @@
 		'Remove-DbaBackup',
 		'Get-DbaPermission',
 		'Get-DbaLastBackup',
-		'Connect-DbaSqlServer',
+		'Connect-DbaInstance',
 		'Get-DbaStartupParameter',
 		'Get-DbaBackupHistory',
 		'Read-DbaBackupHeader',
@@ -184,7 +184,7 @@
 		'Find-DbaDatabase',
 		'Get-DbaMsdtc',
 		'Get-DbaUptime',
-		'Get-DbaXEventsSession',
+		'Get-DbaXEventSession',
 		'Test-DbaOptimizeForAdHoc',
 		'Find-DbaStoredProcedure',
 		'Measure-DbaBackupThroughput',
@@ -355,7 +355,26 @@
 		'Get-DbaPolicy',
 		'Find-DbaSimilarTable',
 		'Disable-DbaAgHadr',
-		'Enable-DbaAgHadr'
+		'Enable-DbaAgHadr',
+		'Get-DbaTraceFile',
+		'Get-DbaSuspectPage',
+		'Get-DbaWaitStatistic',
+		'Clear-DbaWaitStatistics',
+		'Get-DbaTopResourceUsage',
+		'New-DbaLogin',
+		'Get-DbaAgListener',
+		'Invoke-DbaDatabaseClone',
+		'Read-DbaXEventFile',
+		'Get-DbaDistributor',
+		'Update-DbaSqlServiceAccount',
+		'Watch-DbaXEventSession',
+		'Disable-DbaTraceFlag',
+		'Enable-DbaTraceFlag',
+		'Start-DbaAgentJob',
+		'Stop-DbaAgentJob',
+		'Remove-DbaClientAlias',
+		'New-DbaAgentProxy',
+		'Test-DbaLogShippingStatus'
 	)
 	
 	# Cmdlets to export from this module
@@ -436,7 +455,11 @@
 	'Get-DbaDatabaseFreeSpace',
 	'Invoke-DbaSqlcmd',
 	'Get-DbaQueryStoreConfig',
-	'Set-DbaQueryStoreConfig'
+	'Set-DbaQueryStoreConfig',
+	'Get-DbaRegisteredServerName',
+	'Get-DbaXEventsSession',
+	'Connect-DbaSqlServer',
+	'Get-DbaInstance'
 	
 	
 	# List of all modules packaged with this module
@@ -481,8 +504,8 @@
 # SIG # Begin signature block
 # MIIcYgYJKoZIhvcNAQcCoIIcUzCCHE8CAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUR12IsSC2+/oHPpbly6HdgqD3
-# wk+ggheRMIIFGjCCBAKgAwIBAgIQAsF1KHTVwoQxhSrYoGRpyjANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU+b7+bT2Rci1IP0DRA0z4OsUu
+# a1SggheRMIIFGjCCBAKgAwIBAgIQAsF1KHTVwoQxhSrYoGRpyjANBgkqhkiG9w0B
 # AQsFADByMQswCQYDVQQGEwJVUzEVMBMGA1UEChMMRGlnaUNlcnQgSW5jMRkwFwYD
 # VQQLExB3d3cuZGlnaWNlcnQuY29tMTEwLwYDVQQDEyhEaWdpQ2VydCBTSEEyIEFz
 # c3VyZWQgSUQgQ29kZSBTaWduaW5nIENBMB4XDTE3MDUwOTAwMDAwMFoXDTIwMDUx
@@ -613,22 +636,22 @@
 # c3N1cmVkIElEIENvZGUgU2lnbmluZyBDQQIQAsF1KHTVwoQxhSrYoGRpyjAJBgUr
 # DgMCGgUAoHgwGAYKKwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMx
 # DAYKKwYBBAGCNwIBBDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkq
-# hkiG9w0BCQQxFgQU5HCevKwzzWD40Nu7m6qUXmFd7eUwDQYJKoZIhvcNAQEBBQAE
-# ggEAb+XHF1IwhcuUhVB5Fwxu9UUjuNC2Ik7HG+br/woAlbZfGcLh/ydHTmAEFUsJ
-# bxNQiQkAj7w0Iihj/ae8nUy0vVa8IHHTFnqHWtR1SCzvLYa5rLrBxqqQhFLKPVxS
-# xu6ib/LjIPuMYEqkzhxvnmbrJwwD5tbkQvKHgROX1hHljHa0HoghKVcL7gELaRg2
-# wvJaod4LCVAiZHbBQqPbNrBm/Zw12GXLJmGTAYFhpZRKl2gGwM5GVdmswnb5+juE
-# J9aEjXGHlbPWnfq1k3zhiT1IFjHmrtFTQbjMioHE76JXCAYpPgf7+QgINTYUYqbH
-# PBye8rlql5Bbk/u1Wl16MRwfcKGCAg8wggILBgkqhkiG9w0BCQYxggH8MIIB+AIB
+# hkiG9w0BCQQxFgQU24y8iXn95KoAikN5Aw7T8NkofOcwDQYJKoZIhvcNAQEBBQAE
+# ggEAIk4mfE+l6Z87xCKhwRTfok+Mj+w1DvMxvsy5izpvR03kjENU9vLNQsxFoUEe
+# RxbcyrhMHVECd3jbtQVVrdOMamVmz0jyCH0yYq0Owq8j66KoWdDIaqb2CewaUBiJ
+# O/nGFPNDfpIRhKSIV0tq2HhmBrF5hx09vxi9WFgOhhHcEzTgQf5CdK1DKvWDfoUB
+# DjpIp2aUVn8aomgLXHpaEj8ac66eirP8jdEb/HJUkNWqCtoUhohLW7pSfUO7gIJD
+# xtmO8V4z1Pl136jsyV4Q5TJrmU5BnISxgZqEydvRNq2Rzuibubic+CYU53HIaZeN
+# /0lDEmoNeJHg+6fiEL9nred266GCAg8wggILBgkqhkiG9w0BCQYxggH8MIIB+AIB
 # ATB2MGIxCzAJBgNVBAYTAlVTMRUwEwYDVQQKEwxEaWdpQ2VydCBJbmMxGTAXBgNV
 # BAsTEHd3dy5kaWdpY2VydC5jb20xITAfBgNVBAMTGERpZ2lDZXJ0IEFzc3VyZWQg
 # SUQgQ0EtMQIQAwGaAjr/WLFr1tXq5hfwZjAJBgUrDgMCGgUAoF0wGAYJKoZIhvcN
-# AQkDMQsGCSqGSIb3DQEHATAcBgkqhkiG9w0BCQUxDxcNMTcwOTE0MjIzOTI2WjAj
-# BgkqhkiG9w0BCQQxFgQUnmCRzhpExDw2WsN2UrIVztNYATswDQYJKoZIhvcNAQEB
-# BQAEggEAOsV4QslKWNvYP/ZUJfeKZgH0oZaxP+UdrVbxbArhcyZkeGtdGhCvthCY
-# qovhreajMIAPoA1944U/5MyOQmuH6pVxTxW6jEsXWj4rFVtqYOz8hNNmreQ5Dzk+
-# aa7jLjw1z9Xop0GdN28I5TOwVGkZ32K7GJ+JJhRguS+HPsE+Oj3st/N+OFPfD5Qm
-# 2SNcJzVqIpkomvcotyxXUok9mJ9ZiHXjjwY+FSBcjy/0rRrR6Qyxjy/zA2DjVqaZ
-# R3fdWWfZYrwDREib99XzgkrJQSFpeHi0oD988XgQErrzsZiKYBc1XBdV7ZE9DHdV
-# qN3nc4WZSSOIwDkBaoQEpoXJsr5mXg==
+# AQkDMQsGCSqGSIb3DQEHATAcBgkqhkiG9w0BCQUxDxcNMTcxMDA0MjAxMDA0WjAj
+# BgkqhkiG9w0BCQQxFgQUY0a/GJsKDccXDE92F1NElrIY240wDQYJKoZIhvcNAQEB
+# BQAEggEAPtZiFkJd0G7yUYwkQqH/va8rD9f4OrUqnyc3tyLKFbyhSm2fwh1EE8fV
+# Emw0fmIQrscDYcgpJpmZwQLLe3cfVbSW/O+r/jeShNPFJtTdhngDaa4DoC62Xomf
+# cEegjTLZNAF6v8BLYk9X+Ht5S8DbBHjjrmbg3BXw3xhpD8hndoYtp1rLpJ1srVuV
+# EqisS6HZyeip9AdYQ+JOsZpq26sRSh8VRqbH1EERFocZfK15aLPhaSGxDnhuPgC7
+# oU7KD6B2RZQk2K0xGe9FLBaDuOrTOaMOs74/0xpymfNGziDKgz6ZWC8T1W/we/VP
+# 343ozdC5AJA4dVWlUWUs+fXdiXWMMw==
 # SIG # End signature block

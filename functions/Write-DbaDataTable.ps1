@@ -264,16 +264,15 @@ function Write-DbaDataTable {
 			return
 		}
 
-		$bulkCopyOptions = @()
+		$bulkCopyOptions = 0
 		$options = "TableLock", "CheckConstraints", "FireTriggers", "KeepIdentity", "KeepNulls", "Default", "Truncate"
 
 		foreach ($option in $options) {
 			$optionValue = Get-Variable $option -ValueOnly -ErrorAction SilentlyContinue
 			if ($optionValue -eq $true) {
-				$bulkCopyOptions += "$option"
+				$bulkCopyOptions += $([Data.SqlClient.SqlBulkCopyOptions]::$option).value__
 			}
 		}
-		$bulkCopyOptions = $bulkCopyOptions -join " & "
 
 		if ($truncate -eq $true) {
 			if ($Pscmdlet.ShouldProcess($SqlInstance, "Truncating $fqtn")) {
@@ -287,7 +286,7 @@ function Write-DbaDataTable {
 			}
 		}
 
-		$bulkCopy = New-Object Data.SqlClient.SqlBulkCopy("$($server.ConnectionContext.ConnectionString);Database=$Database")
+		$bulkCopy = New-Object Data.SqlClient.SqlBulkCopy("$($server.ConnectionContext.ConnectionString);Database=$Database", $bulkCopyOptions)
 		$bulkCopy.DestinationTableName = $fqtn
 		$bulkCopy.BatchSize = $BatchSize
 		$bulkCopy.NotifyAfter = $NotifyAfter
@@ -370,7 +369,7 @@ function Write-DbaDataTable {
 				return
 			}
 			else {
-				if ($schema -notin $server.Databases[0].Schemas.Name) {
+				if ($schema -notin $db.Schemas.Name) {
 					Stop-Function -Message "Schema does not exist."
 					return
 				}

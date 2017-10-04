@@ -5,12 +5,12 @@ Write-Host -Object "Running $PSCommandpath" -ForegroundColor Cyan
 Describe "$commandname Integration Tests" -Tags "IntegrationTests" {
 	Context "Parameters validation" {
 		BeforeAll {
-			$server = Connect-DbaSqlServer -SqlInstance $script:instance2
+			$server = Connect-DbaInstance -SqlInstance $script:instance2
 			$db1 = "dbatoolsci_dbsetstate_online"
 			$server.Query("CREATE DATABASE $db1")
 		}
 		AfterAll {
-			Remove-DbaDatabase -SqlInstance $script:instance2 -Database $db1
+			Remove-DbaDatabase -Confirm:$false -SqlInstance $script:instance2 -Database $db1
 		}
 		It "Stops if no Database or AllDatabases" {
 			{ Set-DbaDatabaseState -SqlInstance $script:instance2 -Silent } | Should Throw "You must specify"
@@ -49,7 +49,7 @@ Describe "$commandname Integration Tests" -Tags "IntegrationTests" {
 	}
 	Context "Operations on databases" {
 		BeforeAll {
-			$server = Connect-DbaSqlServer -SqlInstance $script:instance2
+			$server = Connect-DbaInstance -SqlInstance $script:instance2
 			$db1 = "dbatoolsci_dbsetstate_online"
 			$db2 = "dbatoolsci_dbsetstate_offline"
 			$db3 = "dbatoolsci_dbsetstate_emergency"
@@ -58,7 +58,7 @@ Describe "$commandname Integration Tests" -Tags "IntegrationTests" {
 			$db6 = "dbatoolsci_dbsetstate_multi"
 			$db7 = "dbatoolsci_dbsetstate_rw"
 			$db8 = "dbatoolsci_dbsetstate_ro"
-			Get-DbaDatabase -SqlInstance $script:instance2 -Database $db1, $db2, $db3, $db4, $db5, $db6, $db7, $db8 | Remove-DbaDatabase
+			Get-DbaDatabase -SqlInstance $script:instance2 -Database $db1, $db2, $db3, $db4, $db5, $db6, $db7, $db8 | Remove-DbaDatabase -Confirm:$false
 			$server.Query("CREATE DATABASE $db1")
 			$server.Query("CREATE DATABASE $db2")
 			$server.Query("CREATE DATABASE $db3")
@@ -78,7 +78,7 @@ Describe "$commandname Integration Tests" -Tags "IntegrationTests" {
 		}
 		AfterAll {
 			$null = Set-DbaDatabaseState -Sqlinstance $script:instance2 -Database $db2, $db3, $db4, $db5, $db7 -Online -ReadWrite -MultiUser -Force
-			$null = Remove-DbaDatabase -SqlInstance $script:instance2 -Database $db1, $db2, $db3, $db4, $db5, $db6, $db7, $db8
+			$null = Remove-DbaDatabase -Confirm:$false -SqlInstance $script:instance2 -Database $db1, $db2, $db3, $db4, $db5, $db6, $db7, $db8
 		}
 		if ($setupright) {
 			# just to have a correct report on how much time BeforeAll takes

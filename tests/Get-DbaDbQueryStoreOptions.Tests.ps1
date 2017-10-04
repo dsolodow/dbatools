@@ -4,11 +4,11 @@ Write-Host -Object "Running $PSCommandpath" -ForegroundColor Cyan
 
 Describe "$commandname Integration Tests" -Tags "IntegrationTests" {
 	BeforeAll {
-		Get-DbaDatabase -SqlInstance $script:instance1, $script:instance2 | Where-Object Name -Match 'dbatoolsci' | Remove-DbaDatabase
+		Get-DbaDatabase -SqlInstance $script:instance1, $script:instance2 | Where-Object Name -Match 'dbatoolsci' | Remove-DbaDatabase -Confirm:$false
 	}
 	Context "Get some client protocols" {
 		foreach ($instance in ($script:instance1, $script:instance2)) {
-			$server = Connect-DbaSqlServer -SqlInstance $instance
+			$server = Connect-DbaInstance -SqlInstance $instance
 			$results = Get-DbaDbQueryStoreOptions -SqlInstance $instance -WarningVariable warning  3>&1
 			
 			if ($server.VersionMajor -lt 13) {

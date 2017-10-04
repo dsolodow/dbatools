@@ -5,7 +5,7 @@ Write-Host -Object "Running $PSCommandpath" -ForegroundColor Cyan
 Describe "$commandname Integration Tests" -Tags "IntegrationTests" {
 	
 	BeforeAll {
-		$server = Connect-DbaSqlServer -SqlInstance $script:instance2
+		$server = Connect-DbaInstance -SqlInstance $script:instance2
 		$random = Get-Random
 		$dbname = "dbatoolsci_getlastbackup$random"
 		$server.Query("CREATE DATABASE $dbname")
@@ -13,7 +13,7 @@ Describe "$commandname Integration Tests" -Tags "IntegrationTests" {
 	}
 	
 	AfterAll {
-		$null = Get-DbaDatabase -SqlInstance $script:instance2 -Database $dbname | Remove-DbaDatabase
+		$null = Get-DbaDatabase -SqlInstance $script:instance2 -Database $dbname | Remove-DbaDatabase -Confirm:$false
 	}
 	
 	Context "Get null history for database" {

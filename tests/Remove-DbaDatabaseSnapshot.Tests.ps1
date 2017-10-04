@@ -5,14 +5,14 @@ Write-Host -Object "Running $PSCommandpath" -ForegroundColor Cyan
 # Targets only instance2 because it's the only one where Snapshots can happen
 Describe "$commandname Integration Tests" -Tags "IntegrationTests" {
 	BeforeAll {
-		$server = Connect-DbaSqlServer -SqlInstance $script:instance2
+		$server = Connect-DbaInstance -SqlInstance $script:instance2
 		$db1 = "dbatoolsci_RemoveSnap"
 		$db1_snap1 = "dbatoolsci_RemoveSnap_snapshotted1"
 		$db1_snap2 = "dbatoolsci_RemoveSnap_snapshotted2"
 		$db2 = "dbatoolsci_RemoveSnap2"
 		$db2_snap1 = "dbatoolsci_RemoveSnap2_snapshotted"
 		Remove-DbaDatabaseSnapshot -SqlInstance $script:instance2 -Database $db1,$db2 -Force
-		Get-DbaDatabase -SqlInstance $script:instance2 -Database $db1,$db2 | Remove-DbaDatabase
+		Get-DbaDatabase -SqlInstance $script:instance2 -Database $db1,$db2 | Remove-DbaDatabase -Confirm:$false
 		$server.Query("CREATE DATABASE $db1")
 		$server.Query("CREATE DATABASE $db2")
 		$needed = Get-DbaDatabase -SqlInstance $script:instance2 -Database $db1,$db2
@@ -26,7 +26,7 @@ Describe "$commandname Integration Tests" -Tags "IntegrationTests" {
 	}
 	AfterAll {
 		Remove-DbaDatabaseSnapshot -SqlInstance $script:instance2 -Database $db1,$db2 -Force -ErrorAction SilentlyContinue
-		Remove-DbaDatabase -SqlInstance $script:instance2 -Database $db1,$db2 -ErrorAction SilentlyContinue
+		Remove-DbaDatabase -Confirm:$false -SqlInstance $script:instance2 -Database $db1,$db2 -ErrorAction SilentlyContinue
 	}
 	Context "Parameters validation" {
 		It "Stops if no Database or AllDatabases" {

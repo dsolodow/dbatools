@@ -10,12 +10,12 @@ Describe "$commandname Integration Tests" -Tags "IntegrationTests" {
 		$DBNameAttachDetach = "dbatoolsci_detachattach"
 		# cleanup
 		foreach ($instance in $Instances) {
-			Remove-DbaDatabase -SqlInstance $instance -Confirm:$false -Database $DBNameBackupRestore,$DBNameAttachDetach
+			Remove-DbaDatabase -Confirm:$false -SqlInstance $instance -Database $DBNameBackupRestore,$DBNameAttachDetach
 		}
 	}
 	AfterAll {
 		foreach ($instance in $Instances) {
-			Remove-DbaDatabase -SqlInstance $instance -Confirm:$false -Database $DBNameBackupRestore,$DBNameAttachDetach
+			Remove-DbaDatabase -Confirm:$false -SqlInstance $instance -Database $DBNameBackupRestore,$DBNameAttachDetach
 		}
 	}
 	
@@ -49,7 +49,7 @@ Describe "$commandname Integration Tests" -Tags "IntegrationTests" {
 	}
 	
 	foreach ($instance in $Instances) {
-		Remove-DbaDatabase -SqlInstance $instance -Confirm:$false -Database $DBNameBackupRestore
+		Remove-DbaDatabase -Confirm:$false -SqlInstance $instance -Database $DBNameBackupRestore
 	}
 	
 	Context "Detach, copies and attaches database successfully." {
@@ -63,8 +63,8 @@ Describe "$commandname Integration Tests" -Tags "IntegrationTests" {
 	Context "Database with the same properties." {
 		It "should not be null" {
 			
-			$db1 = (Connect-DbaSqlServer -SqlInstance localhost).Databases[$DBNameAttachDetach]
-			$db2 = (Connect-DbaSqlServer -SqlInstance localhost\sql2016).Databases[$DBNameAttachDetach]
+			$db1 = (Connect-DbaInstance -SqlInstance localhost).Databases[$DBNameAttachDetach]
+			$db2 = (Connect-DbaInstance -SqlInstance localhost\sql2016).Databases[$DBNameAttachDetach]
 			
 			$db1 | Should Not Be $null
 			$db2 | Should Not Be $null
@@ -75,9 +75,9 @@ Describe "$commandname Integration Tests" -Tags "IntegrationTests" {
 	<#
 		It "Name, recovery model, and status should match" {
 			# This is crazy
-			(Connect-DbaSqlServer -SqlInstance localhost).Databases['detachattach'].Name | Should Be (Connect-DbaSqlServer -SqlInstance localhost\sql2016).Databases['detachattach'].Name
-			(Connect-DbaSqlServer -SqlInstance localhost).Databases['detachattach'].Tables.Count | Should Be (Connect-DbaSqlServer -SqlInstance localhost\sql2016).Databases['detachattach'].Tables.Count
-			(Connect-DbaSqlServer -SqlInstance localhost).Databases['detachattach'].Status | Should Be (Connect-DbaSqlServer -SqlInstance localhost\sql2016).Databases['detachattach'].Status
+			(Connect-DbaInstance -SqlInstance localhost).Databases['detachattach'].Name | Should Be (Connect-DbaInstance -SqlInstance localhost\sql2016).Databases['detachattach'].Name
+			(Connect-DbaInstance -SqlInstance localhost).Databases['detachattach'].Tables.Count | Should Be (Connect-DbaInstance -SqlInstance localhost\sql2016).Databases['detachattach'].Tables.Count
+			(Connect-DbaInstance -SqlInstance localhost).Databases['detachattach'].Status | Should Be (Connect-DbaInstance -SqlInstance localhost\sql2016).Databases['detachattach'].Status
 			
 		}
 	}

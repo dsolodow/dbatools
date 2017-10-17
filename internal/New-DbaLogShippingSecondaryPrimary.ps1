@@ -138,7 +138,7 @@ New-DbaLogShippingSecondaryPrimary -SqlInstance sql2 -BackupSourceDirectory "\\s
 		$ServerSecondary = Connect-SqlInstance -SqlInstance $SqlInstance -SqlCredential $SqlCredential
 	}
 	catch {
-		Stop-Function -Message "Could not connect to Sql Server instance"  -InnerErrorRecord $_ -Target $SqlInstance -Continue
+		Stop-Function -Message "Could not connect to Sql Server instance"  -ErrorRecord $_ -Target $SqlInstance -Continue
 	}
 
 	# Try connecting to the instance
@@ -147,7 +147,7 @@ New-DbaLogShippingSecondaryPrimary -SqlInstance sql2 -BackupSourceDirectory "\\s
 		$ServerPrimary = Connect-SqlInstance -SqlInstance $PrimaryServer -SqlCredential $PrimarySqlCredential
 	}
 	catch {
-		Stop-Function -Message "Could not connect to Sql Server instance"  -InnerErrorRecord $_ -Target $PrimaryServer -Continue
+		Stop-Function -Message "Could not connect to Sql Server instance"  -ErrorRecord $_ -Target $PrimaryServer -Continue
 	}
 
 	# Check if the backup UNC path is correct and reachable
@@ -202,7 +202,7 @@ New-DbaLogShippingSecondaryPrimary -SqlInstance sql2 -BackupSourceDirectory "\\s
         DECLARE @LS_Secondary__CopyJobId AS uniqueidentifier
         DECLARE @LS_Secondary__RestoreJobId	AS uniqueidentifier
         DECLARE @LS_Secondary__SecondaryId AS uniqueidentifier 
-        EXEC master.dbo.sp_add_log_shipping_secondary_primary 
+        EXEC master.sys.sp_add_log_shipping_secondary_primary 
                 @primary_server = N'$PrimaryServer' 
                 ,@primary_database = N'$PrimaryDatabase' 
                 ,@backup_source_directory = N'$BackupSourceDirectory' 
@@ -210,12 +210,12 @@ New-DbaLogShippingSecondaryPrimary -SqlInstance sql2 -BackupSourceDirectory "\\s
                 ,@copy_job_name = N'$CopyJob' 
                 ,@restore_job_name = N'$RestoreJob' 
 				,@file_retention_period = $FileRetentionPeriod 
-				,@copy_job_id = @LS_Secondary__CopyJobId
-                ,@restore_job_id = @LS_Secondary__RestoreJobId
+				,@copy_job_id = @LS_Secondary__CopyJobId OUTPUT
+                ,@restore_job_id = @LS_Secondary__RestoreJobId OUTPUT
                 ,@secondary_id = @LS_Secondary__SecondaryId OUTPUT "
 	
-	if($MonitorServer){
-     	$Query += ",@monitor_server = N'$MonitorServer' 
+	if ($MonitorServer) {
+		$Query += ",@monitor_server = N'$MonitorServer' 
 				,@monitor_server_security_mode = $($MonitorServerSecurityMode) "
 	}
 	
@@ -226,7 +226,12 @@ New-DbaLogShippingSecondaryPrimary -SqlInstance sql2 -BackupSourceDirectory "\\s
             ,@monitor_server_password = N'$MonitorPassword' "
 	}
     
-	$Query += ",@overwrite = 1;"
+	if ($ServerSecondary.Version.Major -gt 9) {
+		$Query += ",@overwrite = 1;"
+	}
+	else {
+		$Query += ";"
+	}
 
 	# Execute the query to add the log shipping primary
 	if ($PSCmdlet.ShouldProcess($SqlServer, ("Configuring logshipping making settings for the primary database to secondary database on $SqlInstance"))) {
@@ -236,8 +241,8 @@ New-DbaLogShippingSecondaryPrimary -SqlInstance sql2 -BackupSourceDirectory "\\s
 			$ServerSecondary.Query($Query)
 		}
 		catch {
-			Stop-Function -Message "Error executing the query.`n$($_.Exception.Message)"  -InnerErrorRecord $_ -Target $SqlInstance -Continue
-			return
+			Write-Message -Message "$($_.Exception.InnerException.InnerException.InnerException.InnerException.Message)" -Level Warning
+			Stop-Function -Message "Error executing the query.`n$($_.Exception.Message)"  -ErrorRecord $_ -Target $SqlInstance -Continue
 		}
 	}
 

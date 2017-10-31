@@ -22,9 +22,11 @@ function Test-DbaSqlPath {
 		.PARAMETER Path
 			The Path to test. This can be a file or directory
 
-		.PARAMETER Silent
-			If this switch is enabled, the internal messaging functions will be silenced.
-
+		.PARAMETER EnableException
+			By default, when something goes wrong we try to catch it, interpret it and give you a friendly warning message.
+			This avoids overwhelming you with "sea of red" exceptions, but is inconvenient because it basically disables advanced scripting.
+			Using this switch turns this "nice by default" feature off and enables you to catch exceptions with your own try/catch.
+			
 		.OUTPUTS
 			System.Boolean
 
@@ -62,7 +64,7 @@ function Test-DbaSqlPath {
 		[PSCredential]$SqlCredential,
 		[Parameter(Mandatory = $true)]
 		[string]$Path,
-		[switch]$Silent
+		[switch][Alias('Silent')]$EnableException
 	)
 
 	process {
@@ -74,7 +76,7 @@ function Test-DbaSqlPath {
 				Stop-Function -Message "Failure" -Category ConnectionError -ErrorRecord $_ -Target $instance -Continue
 			}
 
-			Write-Message -Level VeryVerbose -Message "Checking acces to $path for $instance."
+			Write-Message -Level VeryVerbose -Message "Checking access to $path for $instance."
 			$sql = "EXEC master.dbo.xp_fileexist '$path'"
 			try {
 				Write-Message -Level Debug -Message "Executing: $sql."
@@ -93,6 +95,6 @@ function Test-DbaSqlPath {
 		}
 	}
 	end {
-		Test-DbaDeprecation -DeprecatedOn "1.0.0" -Silent:$false -Alias Test-SqlPath
+		Test-DbaDeprecation -DeprecatedOn "1.0.0" -EnableException:$false -Alias Test-SqlPath
 	}
 }

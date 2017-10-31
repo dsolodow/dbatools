@@ -44,9 +44,11 @@ function Copy-DbaCustomError {
 		.PARAMETER Confirm
 			If this switch is enabled, you will be prompted for confirmation before executing any operations that change state.
 
-		.PARAMETER Silent
-			If this switch is enabled, the internal messaging functions will be silenced.
-
+		.PARAMETER EnableException
+			By default, when something goes wrong we try to catch it, interpret it and give you a friendly warning message.
+			This avoids overwhelming you with "sea of red" exceptions, but is inconvenient because it basically disables advanced scripting.
+			Using this switch turns this "nice by default" feature off and enables you to catch exceptions with your own try/catch.
+			
 		.PARAMETER Force
 			If this switch is enabled, the custom error will be dropped and recreated if it already exists on Destination.
 
@@ -95,7 +97,7 @@ function Copy-DbaCustomError {
 		[object[]]$CustomError,
 		[object[]]$ExcludeCustomError,
 		[switch]$Force,
-		[switch]$Silent
+		[switch][Alias('Silent')]$EnableException
 	)
 
 	begin {
@@ -120,15 +122,17 @@ function Copy-DbaCustomError {
 		foreach ($currentCustomError in $orderedCustomErrors) {
 			$customErrorId = $currentCustomError.ID
 			$language = $currentCustomError.Language.ToString()
-
+			
 			$copyCustomErrorStatus = [pscustomobject]@{
-				SourceServer        = $sourceServer.Name
-				DestinationServer   = $destServer.Name
-				Name                = $currentCustomError
-				Status              = $null
-				DateTime            = [DbaDateTime](Get-Date)
+				SourceServer		 = $sourceServer.Name
+				DestinationServer    = $destServer.Name
+				Type				 = "Custom error"
+				Name				 = $currentCustomError
+				Status			     = $null
+				Notes			     = $null
+				DateTime			 = [DbaDateTime](Get-Date)
 			}
-
+			
 			if ( $CustomError -and ($customErrorId -notin $CustomError -or $customErrorId -in $ExcludeCustomError) ) {
 				continue
 			}
@@ -136,9 +140,10 @@ function Copy-DbaCustomError {
 			if ($destCustomErrors.ID -contains $customErrorId) {
 				if ($force -eq $false) {
 					$copyCustomErrorStatus.Status = "Skipped"
-					$copyCustomErrorStatus
+					$copyCustomErrorStatus.Notes = "Already exists"
+					$copyCustomErrorStatus | Select-DefaultView -Property DateTime, SourceServer, DestinationServer, Name, Type, Status, Notes -TypeName MigrationObject
 
-					Write-Message -Level Warning -Message "Custom error $customErrorId $language exists at destination. Use -Force to drop and migrate."
+					Write-Message -Level Verbose -Message "Custom error $customErrorId $language exists at destination. Use -Force to drop and migrate."
 					continue
 				}
 				else {
@@ -149,7 +154,7 @@ function Copy-DbaCustomError {
 						}
 						catch {
 							$copyCustomErrorStatus.Status = "Failed"
-							$copyCustomErrorStatus
+							$copyCustomErrorStatus | Select-DefaultView -Property DateTime, SourceServer, DestinationServer, Name, Type, Status, Notes -TypeName MigrationObject
 
 							Stop-Function -Message "Issue dropping custom error" -Target $customErrorId -InnerErrorRecord $_ -Continue
 						}
@@ -165,11 +170,11 @@ function Copy-DbaCustomError {
 					$destServer.Query($sql)
 
 					$copyCustomErrorStatus.Status = "Successful"
-					$copyCustomErrorStatus
+					$copyCustomErrorStatus | Select-DefaultView -Property DateTime, SourceServer, DestinationServer, Name, Type, Status, Notes -TypeName MigrationObject
 				}
 				catch {
 					$copyCustomErrorStatus.Status = "Failed"
-					$copyCustomErrorStatus
+					$copyCustomErrorStatus | Select-DefaultView -Property DateTime, SourceServer, DestinationServer, Name, Type, Status, Notes -TypeName MigrationObject
 
 					Stop-Function -Message "Issue creating custom error" -Target $customErrorId -InnerErrorRecord $_
 				}
@@ -177,6 +182,6 @@ function Copy-DbaCustomError {
 		}
 	}
 	end {
-		Test-DbaDeprecation -DeprecatedOn "1.0.0" -Silent:$false -Alias Copy-SqlCustomError
+		Test-DbaDeprecation -DeprecatedOn "1.0.0" -EnableException:$false -Alias Copy-SqlCustomError
 	}
 }

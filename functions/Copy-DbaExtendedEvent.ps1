@@ -44,9 +44,11 @@ function Copy-DbaExtendedEvent {
 		.PARAMETER Confirm
 			If this switch is enabled, you will be prompted for confirmation before executing any operations that change state.
 
-		.PARAMETER Silent
-			If this switch is enabled, the internal messaging functions will be silenced.
-
+		.PARAMETER EnableException
+			By default, when something goes wrong we try to catch it, interpret it and give you a friendly warning message.
+			This avoids overwhelming you with "sea of red" exceptions, but is inconvenient because it basically disables advanced scripting.
+			Using this switch turns this "nice by default" feature off and enables you to catch exceptions with your own try/catch.
+			
 		.PARAMETER Force
 			If this switch is enabled, existing Extended Events sessions on Destination with matching names from Source will be dropped.
 
@@ -95,7 +97,7 @@ function Copy-DbaExtendedEvent {
 		[object[]]$XeSession,
 		[object[]]$ExcludeXeSession,
 		[switch]$Force,
-		[switch]$Silent
+		[switch][Alias('Silent')]$EnableException
 	)
 	begin {	
 	
@@ -126,22 +128,25 @@ function Copy-DbaExtendedEvent {
 		Write-Message -Level Verbose -Message "Migrating sessions."
 		foreach ($session in $storeSessions) {
 			$sessionName = $session.Name
-
+			
 			$copyXeSessionStatus = [pscustomobject]@{
-				SourceServer = $sourceServer.Name
+				SourceServer  = $sourceServer.Name
 				DestinationServer = $destServer.Name
-				Name = $sessionName
-				Status = $null
-				DateTime = [DbaDateTime](Get-Date)
+				Name		  = $sessionName
+				Type	      = "Extended Event"
+				Status	      = $null
+				Notes	      = $null
+				DateTime	  = [DbaDateTime](Get-Date)
 			}
-
+			
 			if ($destStore.Sessions[$sessionName] -ne $null) {
 				if ($force -eq $false) {
 					$copyXeSessionStatus.Status = "Skipped"
-					$copyXeSessionStatus
+					$copyXeSessionStatus.Notes = "Already exists"
+					$copyXeSessionStatus | Select-DefaultView -Property DateTime, SourceServer, DestinationServer, Name, Type, Status, Notes -TypeName MigrationObject
 
-					Write-Message -Level Warning -Message "Extended Event Session '$sessionName' was skipped because it already exists on $destination."
-					Write-Message -Level Warning -Message "Use -Force to drop and recreate."
+					Write-Message -Level Verbose -Message "Extended Event Session '$sessionName' was skipped because it already exists on $destination."
+					Write-Message -Level Verbose -Message "Use -Force to drop and recreate."
 					continue
 				}
 				else {
@@ -154,7 +159,7 @@ function Copy-DbaExtendedEvent {
 						}
 						catch {
 							$copyXeSessionStatus.Status = "Failed"
-							$copyXeSessionStatus
+							$copyXeSessionStatus | Select-DefaultView -Property DateTime, SourceServer, DestinationServer, Name, Type, Status, Notes -TypeName MigrationObject
 
 							Stop-Function -Message "Unable to drop session. Moving on." -Target $sessionName -InnerErrorRecord $_ -Continue
 						}
@@ -174,13 +179,13 @@ function Copy-DbaExtendedEvent {
 						$destStore.Sessions.Refresh()
 						$destStore.Sessions[$sessionName].Start()
 					}
-# Will correcting the spelling of this status cause downstream problems?
+					
 					$copyXeSessionStatus.Status = "Successful"
-					$copyXeSessionStatus
+					$copyXeSessionStatus | Select-DefaultView -Property DateTime, SourceServer, DestinationServer, Name, Type, Status, Notes -TypeName MigrationObject
 				}
 				catch {
 					$copyXeSessionStatus.Status = "Failed"
-					$copyXeSessionStatus
+					$copyXeSessionStatus | Select-DefaultView -Property DateTime, SourceServer, DestinationServer, Name, Type, Status, Notes -TypeName MigrationObject
 
 					Stop-Function -Message "Unable to create session." -Target $sessionName -InnerErrorRecord $_
 				}
@@ -188,6 +193,6 @@ function Copy-DbaExtendedEvent {
 		}
 	}
 	end {
-		Test-DbaDeprecation -DeprecatedOn "1.0.0" -Silent:$false -Alias Copy-SqlExtendedEvent
+		Test-DbaDeprecation -DeprecatedOn "1.0.0" -EnableException:$false -Alias Copy-SqlExtendedEvent
 	}
 }

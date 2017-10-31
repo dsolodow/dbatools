@@ -1,4 +1,4 @@
-﻿function Copy-DbaDatabaseAssembly {
+function Copy-DbaDatabaseAssembly {
 	<#
 		.SYNOPSIS
 			Copy-DbaDatabaseAssembly migrates assemblies from one SQL Server to another.
@@ -46,9 +46,11 @@
 		.PARAMETER Confirm
 			If this switch is enabled, you will be prompted for confirmation before executing any operations that change state.
 
-		.PARAMETER Silent
-			If this switch is enabled, the internal messaging functions will be silenced.
-
+		.PARAMETER EnableException
+			By default, when something goes wrong we try to catch it, interpret it and give you a friendly warning message.
+			This avoids overwhelming you with "sea of red" exceptions, but is inconvenient because it basically disables advanced scripting.
+			Using this switch turns this "nice by default" feature off and enables you to catch exceptions with your own try/catch.
+			
 		.PARAMETER Force
 			If this switch is enabled, existing assemblies on Destination with matching names from Source will be dropped.
 			
@@ -92,7 +94,7 @@
 		[object[]]$Assembly,
 		[object[]]$ExcludeAssembly,
 		[switch]$Force,
-		[switch]$Silent
+		[switch][Alias('Silent')]$EnableException
 	)
 	begin {
 
@@ -136,23 +138,26 @@
 			$assemblyName = $currentAssembly.Name
 			$dbName = $currentAssembly.Parent.Name
 			$destDb = $destServer.Databases[$dbName]
-
+			
 			$copyDbAssemblyStatus = [pscustomobject]@{
-				SourceServer        = $sourceServer.Name
-				SourceDatabase      = $dbName
-				DestinationServer   = $destServer.Name
-				DestinationDatabase = $destDb
-				Name                = $assemblyName
-				Status              = $null
-				DateTime            = [Sqlcollaborative.Dbatools.Utility.DbaDateTime](Get-Date)
+				SourceServer		 = $sourceServer.Name
+				SourceDatabase	     = $dbName
+				DestinationServer    = $destServer.Name
+				DestinationDatabase  = $destDb
+				type				 = "Database Assembly"
+				Name				 = $assemblyName
+				Status			     = $null
+				Notes			     = $null
+				DateTime			 = [Sqlcollaborative.Dbatools.Utility.DbaDateTime](Get-Date)
 			}
-
-
+			
+			
 			if (!$destDb) {
 				$copyDbAssemblyStatus.Status = "Skipped"
-				$copyDbAssemblyStatus
+				$copyDbAssemblyStatus.Notes = "Destination database does not exist"
+				$copyDbAssemblyStatus | Select-DefaultView -Property DateTime, SourceServer, DestinationServer, Name, Type, Status, Notes -TypeName MigrationObject
 
-				Write-Message -Level Warning -Message "Destination database $dbName does not exist. Skipping $assemblyName.";
+				Write-Message -Level Verbose -Message "Destination database $dbName does not exist. Skipping $assemblyName.";
 				continue
 			}
 
@@ -162,7 +167,7 @@
 
 			if ($currentAssembly.AssemblySecurityLevel -eq "External" -and $destDb.Trustworthy -eq $false) {
 				if ($Pscmdlet.ShouldProcess($destination, "Setting $dbName to External")) {
-					Write-Message -Level Warning -Message "Setting $dbName Security Level to External on $destination."
+					Write-Message -Level Verbose -Message "Setting $dbName Security Level to External on $destination."
 					$sql = "ALTER DATABASE $dbName SET TRUSTWORTHY ON"
 					try {
 						Write-Message -Level Debug -Message $sql
@@ -170,7 +175,7 @@
 					}
 					catch {
                         $copyDbAssemblyStatus.Status = "Failed"
-                        $copyDbAssemblyStatus
+                        $copyDbAssemblyStatus | Select-DefaultView -Property DateTime, SourceServer, DestinationServer, Name, Type, Status, Notes -TypeName MigrationObject
 
                         Stop-Function -Message "Issue setting security level." -Target $destDb -InnerErrorRecord $_
 					}
@@ -179,10 +184,11 @@
 
 			if ($destServer.Databases[$dbName].Assemblies.Name -contains $currentAssembly.name) {
 				if ($force -eq $false) {
-                    $copyDbAssemblyStatus.Status = "Skipped"
-                    $copyDbAssemblyStatus
+					$copyDbAssemblyStatus.Status = "Skipped"
+					$copyDbAssemblyStatus.Notes = "Already exists"
+                    $copyDbAssemblyStatus | Select-DefaultView -Property DateTime, SourceServer, DestinationServer, Name, Type, Status, Notes -TypeName MigrationObject
 
-                    Write-Message -Level Warning -Message "Assembly $assemblyName exists at destination in the $dbName database. Use -Force to drop and migrate."
+                    Write-Message -Level Verbose -Message "Assembly $assemblyName exists at destination in the $dbName database. Use -Force to drop and migrate."
 					continue
 				}
 				else {
@@ -198,7 +204,7 @@
                         }
 						catch {
                             $copyDbAssemblyStatus.Status = "Failed"
-                            $copyDbAssemblyStatus
+                            $copyDbAssemblyStatus | Select-DefaultView -Property DateTime, SourceServer, DestinationServer, Name, Type, Status, Notes -TypeName MigrationObject
 
                             Stop-Function -Message "Issue dropping assembly." -Target $assemblyName -InnerErrorRecord $_ -Continue
 						}
@@ -214,12 +220,12 @@
 					$destServer.Query($sql,$dbName)
 
                     $copyDbAssemblyStatus.Status = "Successful"
-                    $copyDbAssemblyStatus
+                    $copyDbAssemblyStatus | Select-DefaultView -Property DateTime, SourceServer, DestinationServer, Name, Type, Status, Notes -TypeName MigrationObject
 
                 }
 				catch {
                     $copyDbAssemblyStatus.Status = "Failed"
-                    $copyDbAssemblyStatus
+                    $copyDbAssemblyStatus | Select-DefaultView -Property DateTime, SourceServer, DestinationServer, Name, Type, Status, Notes -TypeName MigrationObject
 
                     Stop-Function -Message "Issue creating assembly." -Target $assemblyName -InnerErrorRecord $_
 				}
@@ -227,6 +233,6 @@
 		}
 	}
 	end {
-		Test-DbaDeprecation -DeprecatedOn "1.0.0" -Silent:$false -Alias Copy-SqlDatabaseAssembly
+		Test-DbaDeprecation -DeprecatedOn "1.0.0" -EnableException:$false -Alias Copy-SqlDatabaseAssembly
 	}
 }

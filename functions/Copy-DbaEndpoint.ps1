@@ -44,9 +44,11 @@ function Copy-DbaEndpoint {
 		.PARAMETER Confirm
 			If this switch is enabled, you will be prompted for confirmation before executing any operations that change state.
 
-		.PARAMETER Silent
-			If this switch is enabled, the internal messaging functions will be silenced.
-
+		.PARAMETER EnableException
+			By default, when something goes wrong we try to catch it, interpret it and give you a friendly warning message.
+			This avoids overwhelming you with "sea of red" exceptions, but is inconvenient because it basically disables advanced scripting.
+			Using this switch turns this "nice by default" feature off and enables you to catch exceptions with your own try/catch.
+			
 		.PARAMETER Force
 			If this switch is enabled, existing endpoints on Destination with matching names from Source will be dropped.
 			
@@ -90,7 +92,7 @@ function Copy-DbaEndpoint {
 		[object[]]$Endpoint,
 		[object[]]$ExcludeEndpoint,
 		[switch]$Force,
-		[switch]$Silent
+		[switch][Alias('Silent')]$EnableException
 	)
 
 	begin {
@@ -112,15 +114,17 @@ function Copy-DbaEndpoint {
 
 		foreach ($currentEndpoint in $serverEndpoints) {
 			$endpointName = $currentEndpoint.Name
-
+			
 			$copyEndpointStatus = [pscustomobject]@{
-				SourceServer        = $sourceServer.Name
-				DestinationServer   = $destServer.Name
-				Name                = $endpointName
-				Status              = $null
-				DateTime            = [DbaDateTime](Get-Date)
+				SourceServer		 = $sourceServer.Name
+				DestinationServer    = $destServer.Name
+				Name				 = $endpointName
+				Type				 = "Endpoint"
+				Status			     = $null
+				Notes			     = $null
+				DateTime			 = [DbaDateTime](Get-Date)
 			}
-
+			
 			if ($Endpoint -and $Endpoint -notcontains $endpointName -or $ExcludeEndpoint -contains $endpointName) {
 				continue
 			}
@@ -128,9 +132,10 @@ function Copy-DbaEndpoint {
 			if ($destEndpoints.Name -contains $endpointName) {
 				if ($force -eq $false) {
 					$copyEndpointStatus.Status = "Skipped"
-					$copyEndpointStatus
+					$copyEndpointStatus.Notes = "Already exists"
+					$copyEndpointStatus | Select-DefaultView -Property DateTime, SourceServer, DestinationServer, Name, Type, Status, Notes -TypeName MigrationObject
 
-					Write-Message -Level Warning -Message "Server endpoint $endpointName exists at destination. Use -Force to drop and migrate."
+					Write-Message -Level Verbose -Message "Server endpoint $endpointName exists at destination. Use -Force to drop and migrate."
 					continue
 				}
 				else {
@@ -141,7 +146,7 @@ function Copy-DbaEndpoint {
 						}
 						catch {
 							$copyEndpointStatus.Status = "Failed"
-							$copyEndpointStatus
+							$copyEndpointStatus | Select-DefaultView -Property DateTime, SourceServer, DestinationServer, Name, Type, Status, Notes -TypeName MigrationObject
 
 							Stop-Function -Message "Issue dropping server endpoint." -Target $endpointName -InnerErrorRecord $_ -Continue
 						}
@@ -155,11 +160,11 @@ function Copy-DbaEndpoint {
 					$destServer.Query($currentEndpoint.Script()) | Out-Null
 
 					$copyEndpointStatus.Status = "Successful"
-					$copyEndpointStatus
+					$copyEndpointStatus | Select-DefaultView -Property DateTime, SourceServer, DestinationServer, Name, Type, Status, Notes -TypeName MigrationObject
 				}
 				catch {
 					$copyEndpointStatus.Status = "Failed"
-					$copyEndpointStatus
+					$copyEndpointStatus | Select-DefaultView -Property DateTime, SourceServer, DestinationServer, Name, Type, Status, Notes -TypeName MigrationObject
 
 					Stop-Function -Message "Issue creating server endpoint." -Target $endpointName -InnerErrorRecord $_
 				}
@@ -167,6 +172,6 @@ function Copy-DbaEndpoint {
 		}
 	}
 	end {
-		Test-DbaDeprecation -DeprecatedOn "1.0.0" -Silent:$false -Alias Copy-SqlEndpoint
+		Test-DbaDeprecation -DeprecatedOn "1.0.0" -EnableException:$false -Alias Copy-SqlEndpoint
 	}
 }

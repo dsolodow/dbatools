@@ -1,12 +1,13 @@
-﻿foreach ($item in (Get-ChildItem "$script:PSModuleRoot\internal\maintenance" -Filter *.ps1)) {
+foreach ($item in (Get-ChildItem "$script:PSModuleRoot\internal\maintenance" -Filter *.ps1)) {
 	if ($script:doDotSource) { . $item.FullName }
 	else { $ExecutionContext.InvokeCommand.InvokeScript($false, ([scriptblock]::Create([io.file]::ReadAllText($item.FullName))), $null, $null) }
 }
 
 $scriptBlock = {
-	$script:___ScriptName = 'maintenance'
+	$script:___ScriptName = 'dbatools-maintenance'
 	
 	# Import module in a way where internals are available
+	$dbatools_disableTimeMeasurements = $true
 	Import-Module "$([Sqlcollaborative.Dbatools.dbaSystem.SystemHost]::ModuleBase)\dbatools.psm1"
 	
 	try {
@@ -21,7 +22,7 @@ $scriptBlock = {
 			$tasksDone = @()
 			while ($task = [Sqlcollaborative.Dbatools.Maintenance.MaintenanceHost]::GetNextTask($tasksDone)) {
 				try { ([ScriptBlock]::Create($task.ScriptBlock.ToString())).Invoke() }
-				catch { Write-Message -Silent $false -Level Verbose -Message "[Maintenance] Task '$($task.Name)' failed to execute: $_" -ErrorRecord $_ -FunctionName "task:Maintenance" -Target $task }
+				catch { Write-Message -EnableException $false -Level Verbose -Message "[Maintenance] Task '$($task.Name)' failed to execute: $_" -ErrorRecord $_ -FunctionName "task:Maintenance" -Target $task }
 				$task.LastExecution = Get-Date
 				$tasksDone += $task.Name
 			}
@@ -36,5 +37,5 @@ $scriptBlock = {
 	}
 }
 
-Register-DbaRunspace -ScriptBlock $scriptBlock -Name "maintenance"
-Start-DbaRunspace -Name "maintenance"
+Register-DbaRunspace -ScriptBlock $scriptBlock -Name "dbatools-maintenance"
+Start-DbaRunspace -Name "dbatools-maintenance"

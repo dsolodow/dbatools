@@ -36,7 +36,7 @@ function Copy-DbaBackupDevice {
 			BackupDevice to be copied. Auto-populated list of devices. If not provided all BackupDevice(s) will be copied.
 
 		.PARAMETER Force
-			If this switch is enabled, backup device(s) will be dropped and recreated if they already exist on Destination.
+			If this switch is enabled, backup device(s) will be dropped and recreated if they already exists on destination.
 
 		.PARAMETER WhatIf
 			If this switch is enabled, no actions are performed but informational messages will be displayed that explain what would happen if the command were to run.
@@ -44,9 +44,11 @@ function Copy-DbaBackupDevice {
 		.PARAMETER Confirm
 			If this switch is enabled, you will be prompted for confirmation before executing any operations that change state.
 
-		.PARAMETER Silent
-			If this switch is enabled, the internal messaging functions will be silenced.
-
+		.PARAMETER EnableException
+			By default, when something goes wrong we try to catch it, interpret it and give you a friendly warning message.
+			This avoids overwhelming you with "sea of red" exceptions, but is inconvenient because it basically disables advanced scripting.
+			Using this switch turns this "nice by default" feature off and enables you to catch exceptions with your own try/catch.
+			
 		.NOTES
 			Tags: Migration, DisasterRecovery, Backup
 			Author: Chrissy LeMaire (@cl), netnerds.net
@@ -84,7 +86,7 @@ function Copy-DbaBackupDevice {
 		[PSCredential]$DestinationSqlCredential,
 		[object[]]$BackupDevice,
 		[switch]$Force,
-		[switch]$Silent
+		[switch][Alias('Silent')]$EnableException
 	)
 	
 	begin {
@@ -106,12 +108,13 @@ function Copy-DbaBackupDevice {
 			$deviceName = $currentBackupDevice.Name
 			
 			$copyBackupDeviceStatus = [pscustomobject]@{
-				SourceServer  = $sourceServer.Name
+				SourceServer    = $sourceServer.Name
 				DestinationServer = $destServer.Name
-				Name		  = $deviceName
-				Type		  = "BackupDevice"
-				Status	      = $null
-				DateTime	  = [Sqlcollaborative.Dbatools.Utility.DbaDateTime](Get-Date)
+				Name		    = $deviceName
+				Type		    = "Backup Device"
+				Status		    = $null
+				Notes		    = $null
+				DateTime	    = [Sqlcollaborative.Dbatools.Utility.DbaDateTime](Get-Date)
 			}
 			
 			if ($BackupDevice -and $BackupDevice -notcontains $deviceName) {
@@ -121,9 +124,10 @@ function Copy-DbaBackupDevice {
 			if ($destBackupDevices.Name -contains $deviceName) {
 				if ($force -eq $false) {
 					$copyBackupDeviceStatus.Status = "Skipped"
+					$copyBackupDeviceStatus.Notes = "Already exists"
 					$copyBackupDeviceStatus
 					
-					Write-Message -Level Warning -Message "backup device $deviceName exists at destination. Use -Force to drop and migrate."
+					Write-Message -Level Verbose -Message "backup device $deviceName exists at destination. Use -Force to drop and migrate."
 					continue
 				}
 				else {
@@ -134,7 +138,7 @@ function Copy-DbaBackupDevice {
 						}
 						catch {
 							$copyBackupDeviceStatus.Status = "Failed"
-							$copyBackupDeviceStatus
+							$copyBackupDeviceStatus | Select-DefaultView -Property DateTime, SourceServer, DestinationServer, Name, Type, Status, Notes -TypeName MigrationObject
 							
 							Stop-Function -Message "Issue dropping backup device" -Target $deviceName -ErrorRecord $_ -Continue
 						}
@@ -150,7 +154,7 @@ function Copy-DbaBackupDevice {
 				}
 				catch {
 					$copyBackupDeviceStatus.Status = "Failed"
-					$copyBackupDeviceStatus
+					$copyBackupDeviceStatus | Select-DefaultView -Property DateTime, SourceServer, DestinationServer, Name, Type, Status, Notes -TypeName MigrationObject
 					
 					Stop-Function -Message "Issue scripting out backup device" -Target $deviceName -ErrorRecord $_ -Continue
 				}
@@ -171,8 +175,8 @@ function Copy-DbaBackupDevice {
 				$destPath = Join-AdminUnc $destNetBios $backupDirectory
 				
 				if ($Pscmdlet.ShouldProcess($destination, "Updating create code to use new path")) {
-					Write-Message -Level Warning -Message "$path doesn't exist on $destination"
-					Write-Message -Level Warning -Message "Using default backup directory $backupDirectory"
+					Write-Message -Level Verbose -Message "$path doesn't exist on $destination"
+					Write-Message -Level Verbose -Message "Using default backup directory $backupDirectory"
 					
 					try {
 						Write-Message -Level Verbose -Message "Updating $deviceName to use $backupDirectory"
@@ -180,7 +184,7 @@ function Copy-DbaBackupDevice {
 					}
 					catch {
 						$copyBackupDeviceStatus.Status = "Failed"
-						$copyBackupDeviceStatus
+						$copyBackupDeviceStatus | Select-DefaultView -Property DateTime, SourceServer, DestinationServer, Name, Type, Status, Notes -TypeName MigrationObject
 						
 						Stop-Function -Message "Issue updating script of backup device with new path" -Target $deviceName -ErrorRecord $_ -Continue
 					}
@@ -194,7 +198,7 @@ function Copy-DbaBackupDevice {
 				}
 				catch {
 					$copyBackupDeviceStatus.Status = "Failed"
-					$copyBackupDeviceStatus
+					$copyBackupDeviceStatus | Select-DefaultView -Property DateTime, SourceServer, DestinationServer, Name, Type, Status, Notes -TypeName MigrationObject
 					
 					Stop-Function -Message "Issue copying backup device to destination" -Target $deviceName -ErrorRecord $_ -Continue
 				}
@@ -207,11 +211,11 @@ function Copy-DbaBackupDevice {
 					$destServer.BackupDevices.Refresh()
 					
 					$copyBackupDeviceStatus.Status = "Successful"
-					$copyBackupDeviceStatus
+					$copyBackupDeviceStatus | Select-DefaultView -Property DateTime, SourceServer, DestinationServer, Name, Type, Status, Notes -TypeName MigrationObject
 				}
 				catch {
 					$copyBackupDeviceStatus.Status = "Failed"
-					$copyBackupDeviceStatus
+					$copyBackupDeviceStatus | Select-DefaultView -Property DateTime, SourceServer, DestinationServer, Name, Type, Status, Notes -TypeName MigrationObject
 					
 					Stop-Function -Message "Issue adding backup device" -Target $deviceName -ErrorRecord $_ -Continue
 				}
@@ -219,6 +223,6 @@ function Copy-DbaBackupDevice {
 		} #end foreach backupDevice
 	}
 	end {
-		Test-DbaDeprecation -DeprecatedOn "1.0.0" -Silent:$false -Alias Copy-SqlBackupDevice
+		Test-DbaDeprecation -DeprecatedOn "1.0.0" -EnableException:$false -Alias Copy-SqlBackupDevice
 	}
 }

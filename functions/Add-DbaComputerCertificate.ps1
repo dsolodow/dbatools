@@ -1,4 +1,4 @@
-﻿function Add-DbaComputerCertificate {
+function Add-DbaComputerCertificate {
 <#
 	.SYNOPSIS
 		Adds a computer certificate - useful for older systems.
@@ -27,9 +27,11 @@
 	.PARAMETER Folder
 		Certificate folder. Default is My (Personal).
 	
-	.PARAMETER Silent
-		If this switch is enabled, the internal messaging functions will be silenced.
-	
+	.PARAMETER EnableException
+		By default, when something goes wrong we try to catch it, interpret it and give you a friendly warning message.
+		This avoids overwhelming you with "sea of red" exceptions, but is inconvenient because it basically disables advanced scripting.
+		Using this switch turns this "nice by default" feature off and enables you to catch exceptions with your own try/catch.
+		
 	.PARAMETER WhatIf
 		If this switch is enabled, no actions are performed but informational messages will be displayed that explain what would happen if the command were to run.
 	
@@ -39,12 +41,12 @@
 	.EXAMPLE
 		Add-DbaComputerCertificate -ComputerName Server1 -Path C:\temp\cert.cer
 		
-		Adds the local C:\temp\cer.cer to the remote server Server1 in LocalMachine\My (Personal).
+		Adds the local C:\temp\cert.cer to the remote server Server1 in LocalMachine\My (Personal).
 	
 	.EXAMPLE
 		Add-DbaComputerCertificate -Path C:\temp\cert.cer
 		
-		Adds the local C:\temp\cer.cer to the local computer's LocalMachine\My (Personal) certificate store.
+		Adds the local C:\temp\cert.cer to the local computer's LocalMachine\My (Personal) certificate store.
 	
 	.NOTES
 		Tags: Certificate
@@ -62,7 +64,7 @@
 		[string]$Path,
 		[string]$Store = "LocalMachine",
 		[string]$Folder = "My",
-		[switch]$Silent
+		[switch][Alias('Silent')]$EnableException
 	)
 	
 	begin {

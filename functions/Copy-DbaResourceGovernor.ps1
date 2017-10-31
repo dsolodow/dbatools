@@ -47,9 +47,11 @@ function Copy-DbaResourceGovernor {
 		.PARAMETER Force
 			If this switch is enabled, the policies will be dropped and recreated on Destination.
 
-		.PARAMETER Silent
-			If this switch is enabled, the internal messaging functions will be silenced.
-
+		.PARAMETER EnableException
+			By default, when something goes wrong we try to catch it, interpret it and give you a friendly warning message.
+			This avoids overwhelming you with "sea of red" exceptions, but is inconvenient because it basically disables advanced scripting.
+			Using this switch turns this "nice by default" feature off and enables you to catch exceptions with your own try/catch.
+			
 		.NOTES
 			Tags: Migration, ResourceGovernor
 			Author: Chrissy LeMaire (@cl), netnerds.net
@@ -90,7 +92,7 @@ function Copy-DbaResourceGovernor {
 		[object[]]$ResourcePool,
 		[object[]]$ExcludeResourcePool,
 		[switch]$Force,
-		[switch]$Silent
+		[switch][Alias('Silent')]$EnableException
 	)
 
 	begin {
@@ -113,7 +115,7 @@ function Copy-DbaResourceGovernor {
 			SourceServer      = $sourceServer.Name
 			DestinationServer = $destServer.Name
 			Type              = "Resource Governor Settings"
-			Name              = $null
+			Name              = "All Settings"
 			Status            = $null
 			Notes             = $null
 			DateTime          = [DbaDateTime](Get-Date)
@@ -121,7 +123,7 @@ function Copy-DbaResourceGovernor {
 
 		if ($Pscmdlet.ShouldProcess($destination, "Updating Resource Governor settings")) {
 			if ($destServer.Edition -notmatch 'Enterprise' -and $destServer.Edition -notmatch 'Datacenter' -and $destServer.Edition -notmatch 'Developer') {
-				Write-Message -Level Warning -Message "The resource governor is not available in this edition of SQL Server. You can manipulate resource governor metadata but you will not be able to apply resource governor configuration. Only Enterprise edition of SQL Server supports resource governor."
+				Write-Message -Level Verbose -Message "The resource governor is not available in this edition of SQL Server. You can manipulate resource governor metadata but you will not be able to apply resource governor configuration. Only Enterprise edition of SQL Server supports resource governor."
 			}
 			else {
 				try {
@@ -131,12 +133,12 @@ function Copy-DbaResourceGovernor {
 					$destServer.Query($sql)
 
 					$copyResourceGovSetting.Status = "Successful"
-					$copyResourceGovSetting
+					$copyResourceGovSetting | Select-DefaultView -Property DateTime, SourceServer, DestinationServer, Name, Type, Status, Notes -TypeName MigrationObject
 				}
 				catch {
 					$copyResourceGovSetting.Status = "Failed"
 					$copyResourceGovSetting.Notes = $_.Exception
-					$copyResourceGovSetting
+					$copyResourceGovSetting | Select-DefaultView -Property DateTime, SourceServer, DestinationServer, Name, Type, Status, Notes -TypeName MigrationObject
 
 					Stop-Function -Message "Not able to update settings." -Target $destServer -ErrorRecord $_
 				}
@@ -161,7 +163,7 @@ function Copy-DbaResourceGovernor {
 			$copyResourceGovPool = [pscustomobject]@{
 				SourceServer      = $sourceServer.Name
 				DestinationServer = $destServer.Name
-				Type              = "Pool"
+				Type              = "Resource Governor Pool"
 				Name              = $poolName
 				Status            = $null
 				Notes             = $null
@@ -170,11 +172,11 @@ function Copy-DbaResourceGovernor {
 
 			if ($destServer.ResourceGovernor.ResourcePools[$poolName] -ne $null) {
 				if ($force -eq $false) {
-					Write-Message -Level Warning -Message "Pool '$poolName' was skipped because it already exists on $destination. Use -Force to drop and recreate."
+					Write-Message -Level Verbose -Message "Pool '$poolName' was skipped because it already exists on $destination. Use -Force to drop and recreate."
 
 					$copyResourceGovPool.Status = "Skipped"
-					$copyResourceGovPool.Notes = "Already exists on destination"
-					$copyResourceGovPool
+					$copyResourceGovPool.Notes = "Already exists"
+					$copyResourceGovPool | Select-DefaultView -Property DateTime, SourceServer, DestinationServer, Name, Type, Status, Notes -TypeName MigrationObject
 					continue
 				}
 				else {
@@ -194,7 +196,7 @@ function Copy-DbaResourceGovernor {
 						catch {
 							$copyResourceGovPool.Status = "Failed to drop from Destination"
 							$copyResourceGovPool.Notes = $_.Exception
-							$copyResourceGovPool
+							$copyResourceGovPool | Select-DefaultView -Property DateTime, SourceServer, DestinationServer, Name, Type, Status, Notes -TypeName MigrationObject
 
 							Stop-Function -Message "Unable to drop: $_  Moving on." -Target $destPool -ErrorRecord $_ -Continue
 						}
@@ -210,7 +212,7 @@ function Copy-DbaResourceGovernor {
 					$destServer.Query($sql)
 
 					$copyResourceGovPool.Status = "Successful"
-					$copyResourceGovPool
+					$copyResourceGovPool | Select-DefaultView -Property DateTime, SourceServer, DestinationServer, Name, Type, Status, Notes -TypeName MigrationObject
 
 					$workloadGroups = $pool.WorkloadGroups
 					foreach ($workloadGroup in $workloadGroups) {
@@ -219,7 +221,7 @@ function Copy-DbaResourceGovernor {
 						$copyResourceGovWorkGroup = [pscustomobject]@{
 							SourceServer      = $sourceServer.Name
 							DestinationServer = $destServer.Name
-							Type              = "Pool Workgroup"
+							Type              = "Resource Governor Pool Workgroup"
 							Name              = $workgroupName
 							Status            = $null
 							Notes             = $null
@@ -232,13 +234,13 @@ function Copy-DbaResourceGovernor {
 						$destServer.Query($sql)
 
 						$copyResourceGovWorkGroup.Status = "Successful"
-						$copyResourceGovWorkGroup
+						$copyResourceGovWorkGroup | Select-DefaultView -Property DateTime, SourceServer, DestinationServer, Name, Type, Status, Notes -TypeName MigrationObject
 					}
 				}
 				catch {
 					$copyResourceGovWorkGroup.Status = "Failed"
 					$copyResourceGovWorkGroup.Notes = $_.Exception
-					$copyResourceGovWorkGroup
+					$copyResourceGovWorkGroup | Select-DefaultView -Property DateTime, SourceServer, DestinationServer, Name, Type, Status, Notes -TypeName MigrationObject
 
 					Stop-Function -Message "Unable to migrate pool." -Target $pool -ErrorRecord $_
 				}
@@ -247,7 +249,7 @@ function Copy-DbaResourceGovernor {
 
 		if ($Pscmdlet.ShouldProcess($destination, "Reconfiguring")) {
 			if ($destServer.Edition -notmatch 'Enterprise' -and $destServer.Edition -notmatch 'Datacenter' -and $destServer.Edition -notmatch 'Developer') {
-				Write-Message -Level Warning -Message "The resource governor is not available in this edition of SQL Server. You can manipulate resource governor metadata but you will not be able to apply resource governor configuration. Only Enterprise edition of SQL Server supports resource governor."
+				Write-Message -Level Verbose -Message "The resource governor is not available in this edition of SQL Server. You can manipulate resource governor metadata but you will not be able to apply resource governor configuration. Only Enterprise edition of SQL Server supports resource governor."
 			}
 			else {
 				Write-Message -Level Verbose -Message "Reconfiguring Resource Governor."
@@ -258,16 +260,16 @@ function Copy-DbaResourceGovernor {
 					SourceServer      = $sourceServer.Name
 					DestinationServer = $destServer.Name
 					Type              = "Reconfigure Resource Governor"
-					Name              = $null
+					Name              = "Reconfigure Resource Governor"
 					Status            = "Successful"
 					Notes             = $null
 					DateTime          = [DbaDateTime](Get-Date)
 				}
-				$copyResourceGovReconfig
+				$copyResourceGovReconfig | Select-DefaultView -Property DateTime, SourceServer, DestinationServer, Name, Type, Status, Notes -TypeName MigrationObject
 			}
 		}
 	}
 	end {
-		Test-DbaDeprecation -DeprecatedOn "1.0.0" -Silent:$false -Alias Copy-SqlResourceGovernor
+		Test-DbaDeprecation -DeprecatedOn "1.0.0" -EnableException:$false -Alias Copy-SqlResourceGovernor
 	}
 }

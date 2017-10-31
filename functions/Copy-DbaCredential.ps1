@@ -1,4 +1,4 @@
-﻿function Copy-DbaCredential {
+function Copy-DbaCredential {
 	<#
 		.SYNOPSIS
 			Copy-DbaCredential migrates SQL Server Credentials from one SQL Server to another while maintaining Credential passwords.
@@ -51,9 +51,11 @@
 		.PARAMETER Confirm
 			If this switch is enabled, you will be prompted for confirmation before executing any operations that change state.
 
-		.PARAMETER Silent
-			If this switch is enabled, the internal messaging functions will be silenced.
-
+		.PARAMETER EnableException
+			By default, when something goes wrong we try to catch it, interpret it and give you a friendly warning message.
+			This avoids overwhelming you with "sea of red" exceptions, but is inconvenient because it basically disables advanced scripting.
+			Using this switch turns this "nice by default" feature off and enables you to catch exceptions with your own try/catch.
+			
 		.NOTES
 			Tags: WSMan, Migration
 			Author: Chrissy LeMaire (@cl), netnerds.net
@@ -96,7 +98,7 @@
 		[object[]]$CredentialIdentity,
 		[object[]]$ExcludeCredentialIdentity,
 		[switch]$Force,
-		[switch]$Silent
+		[switch][Alias('Silent')]$EnableException
 	)
 	
 	begin {
@@ -310,19 +312,22 @@
 				$credentialName = $credential.Name
 				
 				$copyCredentialStatus = [pscustomobject]@{
-					SourceServer = $sourceServer.Name
+					SourceServer  = $sourceServer.Name
 					DestinationServer = $destServer.Name
-					Name = $credentialName
-					Status = $null
-					DateTime = [DbaDateTime](Get-Date)
+					Type		  = "Credential"
+					Name		  = $credentialName
+					Status	      = $null
+					Notes		  = $null
+					DateTime	  = [DbaDateTime](Get-Date)
 				}
 				
 				if ($destServer.Credentials[$credentialName] -ne $null) {
 					if (!$force) {
 						$copyCredentialStatus.Status = "Skipping"
-						$copyCredentialStatus
+						$copyCredentialStatus.Notes = "Already exists"
+						$copyCredentialStatus | Select-DefaultView -Property DateTime, SourceServer, DestinationServer, Name, Type, Status, Notes -TypeName MigrationObject
 						
-						Write-Message -Level Warning -Message "$credentialName exists $($destServer.Name). Skipping."
+						Write-Message -Level Verbose -Message "$credentialName exists $($destServer.Name). Skipping."
 						continue
 					}
 					else {
@@ -347,11 +352,11 @@
 					}
 					
 					$copyCredentialStatus.Status = "Successful"
-					$copyCredentialStatus
+					$copyCredentialStatus | Select-DefaultView -Property DateTime, SourceServer, DestinationServer, Name, Type, Status, Notes -TypeName MigrationObject
 				}
 				catch {
 					$copyCredentialStatus.Status = "Failed"
-					$copyCredentialStatus
+					$copyCredentialStatus | Select-DefaultView -Property DateTime, SourceServer, DestinationServer, Name, Type, Status, Notes -TypeName MigrationObject
 					
 					Stop-Function -Message "Error creating credential" -Target $credentialName -ErrorRecord $_
 				}
@@ -365,7 +370,7 @@
 		$destination = $destServer.DomainInstanceName
 		
 		if ($SourceSqlCredential.Username -ne $null) {
-			Write-Message -Level Warning -Message "You are using SQL credentials and this script requires Windows admin access to the $Source server. Trying anyway."
+			Write-Message -Level Verbose -Message "You are using SQL credentials and this script requires Windows admin access to the $Source server. Trying anyway."
 		}
 		
 		if ($sourceServer.VersionMajor -lt 9 -or $destServer.VersionMajor -lt 9) {
@@ -394,6 +399,6 @@
 		Copy-Credential $credentials -force:$force
 	}
 	end {
-		Test-DbaDeprecation -DeprecatedOn "1.0.0" -Silent:$false -Alias Copy-SqlCredential
+		Test-DbaDeprecation -DeprecatedOn "1.0.0" -EnableException:$false -Alias Copy-SqlCredential
 	}
 }

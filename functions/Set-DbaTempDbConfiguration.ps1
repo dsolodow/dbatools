@@ -63,9 +63,11 @@ function Set-DbaTempDbConfiguration {
 		.PARAMETER Confirm
 			If this switch is enabled, you will be prompted for confirmation before executing any operations that change state.
 
-		.PARAMETER Silent
-			If this switch is enabled, the internal messaging functions will be silenced.
-
+		.PARAMETER EnableException
+			By default, when something goes wrong we try to catch it, interpret it and give you a friendly warning message.
+			This avoids overwhelming you with "sea of red" exceptions, but is inconvenient because it basically disables advanced scripting.
+			Using this switch turns this "nice by default" feature off and enables you to catch exceptions with your own try/catch.
+			
 		.LINK
 			https://dbatools.io/Set-DbaTempDbConfiguration
 
@@ -111,7 +113,7 @@ function Set-DbaTempDbConfiguration {
 		[string]$OutFile,
 		[switch]$OutputScriptOnly,
 		[switch]$DisableGrowth,
-		[switch]$Silent
+		[switch][Alias('Silent')]$EnableException
 	)
 	begin {
 		$sql = @()
@@ -181,8 +183,6 @@ function Set-DbaTempDbConfiguration {
 			$LogFileGrowthMB = 0
 		}
 		
-		$LogSizeMBActual = if (-not $LogFileSizeMB) { $([Math]::Floor($DataFileSizeMB / 4)) }
-
 		# Check current tempdb. Throw an error if current tempdb is larger than config.
 		$CurrentFileCount = $server.Databases['tempdb'].ExecuteWithResults('SELECT count(1) as FileCount FROM sys.database_files WHERE type=0').Tables[0].Rows[0].FileCount
 		$TooBigCount = $server.Databases['tempdb'].ExecuteWithResults("SELECT TOP 1 (size/128) as Size FROM sys.database_files WHERE size/128 > $DataFilesizeSingleMB AND type = 0").Tables[0].Rows[0].Size
@@ -256,7 +256,7 @@ function Set-DbaTempDbConfiguration {
 						DataFileCount        = $DataFileCount
 						DataFileSizeMB       = $DataFileSizeMB
 						SingleDataFileSizeMB = $DataFilesizeSingleMB
-						LogSizeMB            = $LogSizeMBActual
+						LogSizeMB            = $LogFileSizeMB
 						DataPath             = $DataPath
 						LogPath              = $LogPath
 						DataFileGrowthMB     = $DataFileGrowthMB
@@ -274,6 +274,6 @@ function Set-DbaTempDbConfiguration {
 		}
 	}
 	end { 
-		Test-DbaDeprecation -DeprecatedOn "1.0.0" -Silent:$false -Alias Set-SqlTempDbConfiguration
+		Test-DbaDeprecation -DeprecatedOn "1.0.0" -EnableException:$false -Alias Set-SqlTempDbConfiguration
 	}
 }

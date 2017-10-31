@@ -42,9 +42,11 @@ function Copy-DbaSpConfigure {
 		.PARAMETER Confirm
 			If this switch is enabled, you will be prompted for confirmation before executing any operations that change state.
 
-		.PARAMETER Silent
-			If this switch is enabled, the internal messaging functions will be silenced.
-
+		.PARAMETER EnableException
+			By default, when something goes wrong we try to catch it, interpret it and give you a friendly warning message.
+			This avoids overwhelming you with "sea of red" exceptions, but is inconvenient because it basically disables advanced scripting.
+			Using this switch turns this "nice by default" feature off and enables you to catch exceptions with your own try/catch.
+			
 		.NOTES
 			Tags: Migration, Configure, SpConfigure
 			Author: Chrissy LeMaire (@cl), netnerds.net
@@ -89,7 +91,7 @@ function Copy-DbaSpConfigure {
 		$DestinationSqlCredential,
 		[object[]]$ConfigName,
 		[object[]]$ExcludeConfigName,
-		[switch]$Silent
+		[switch][Alias('Silent')]$EnableException
 	)
 
 	begin {
@@ -115,7 +117,7 @@ function Copy-DbaSpConfigure {
 				SourceServer      = $sourceServer.Name
 				DestinationServer = $destServer.Name
 				Name              = $sConfigName
-				Type              = $null
+				Type              = "Configuration Value"
 				Status            = $null
 				Notes             = $null
 				DateTime          = [DbaDateTime](Get-Date)
@@ -127,11 +129,12 @@ function Copy-DbaSpConfigure {
 
 			$destProp = $destProps | Where-Object ConfigName -eq $sConfigName
 			if (!$destProp) {
-				Write-Message -Level Warning -Message "Configuration $sConfigName ('$displayName') does not exist on the destination instance."
+				Write-Message -Level Verbose -Message "Configuration $sConfigName ('$displayName') does not exist on the destination instance."
 
 				$copySpConfigStatus.Status = "Skipped"
 				$copySpConfigStatus.Notes = "Configuration does not exist on destination"
-				$copySpConfigStatus
+				$copySpConfigStatus | Select-DefaultView -Property DateTime, SourceServer, DestinationServer, Name, Type, Status, Notes -TypeName MigrationObject
+				
 				continue
 			}
 
@@ -139,22 +142,22 @@ function Copy-DbaSpConfigure {
 				try {
 					$destOldConfigValue = $destProp.ConfiguredValue
 
-					$result = Set-DbaSpConfigure -SqlInstance $destServer -ConfigName $sConfigName -Value $sConfiguredValue -Silent -Mode 'Lazy'
+					$result = Set-DbaSpConfigure -SqlInstance $destServer -ConfigName $sConfigName -Value $sConfiguredValue -EnableException -Mode 'Lazy'
 					if ($result) {
 						Write-Message -Level Verbose -Message "Updated $($destProp.ConfigName) ($($destProp.DisplayName)) from $destOldConfigValue to $sConfiguredValue."
 					}
 
 					if ($requiresRestart -eq $false) {
-						Write-Message -Level Warning -Message "Configuration option $sConfigName ($displayName) requires restart."
+						Write-Message -Level Verbose -Message "Configuration option $sConfigName ($displayName) requires restart."
 						$copySpConfigStatus.Notes = "Requires restart"
 					}
 					$copySpConfigStatus.Status = "Successful"
-					$copySpConfigStatus
+					$copySpConfigStatus | Select-DefaultView -Property DateTime, SourceServer, DestinationServer, Name, Type, Status, Notes -TypeName MigrationObject
 				}
 				catch {
 					$copySpConfigStatus.Status = "Failed"
 					$copySpConfigStatus.Notes = $_.Exception
-					$copySpConfigStatus
+					$copySpConfigStatus | Select-DefaultView -Property DateTime, SourceServer, DestinationServer, Name, Type, Status, Notes -TypeName MigrationObject
 
 					Stop-Function -Message "Could not set $($destProp.ConfigName) to $sConfiguredValue." -Target $sConfigName -ErrorRecord $_
 				}
@@ -162,6 +165,6 @@ function Copy-DbaSpConfigure {
 		}
 	}
 	end {
-		Test-DbaDeprecation -DeprecatedOn "1.0.0" -Silent:$false -Alias Copy-SqlSpConfigure
+		Test-DbaDeprecation -DeprecatedOn "1.0.0" -EnableException:$false -Alias Copy-SqlSpConfigure
 	}
 }

@@ -47,9 +47,11 @@ function Copy-DbaServerAudit {
 		.PARAMETER Force
 			If this switch is enabled, the audits will be dropped and recreated on Destination.
 
-		.PARAMETER Silent
-			If this switch is enabled, the internal messaging functions will be silenced.
-
+		.PARAMETER EnableException
+			By default, when something goes wrong we try to catch it, interpret it and give you a friendly warning message.
+			This avoids overwhelming you with "sea of red" exceptions, but is inconvenient because it basically disables advanced scripting.
+			Using this switch turns this "nice by default" feature off and enables you to catch exceptions with your own try/catch.
+			
 		.NOTES
 			Tags: Migration
 			Author: Chrissy LeMaire (@cl), netnerds.net
@@ -90,7 +92,7 @@ function Copy-DbaServerAudit {
 		[object[]]$Audit,
 		[object[]]$ExcludeAudit,
 		[switch]$Force,
-		[switch]$Silent
+		[switch][Alias('Silent')]$EnableException
 	)
 
 	begin {
@@ -119,7 +121,7 @@ function Copy-DbaServerAudit {
 				SourceServer      = $sourceServer.Name
 				DestinationServer = $destServer.Name
 				Name              = $auditName
-				Type              = $null
+				Type              = "Server Audit"
 				Status            = $null
 				Notes             = $null
 				DateTime          = [DbaDateTime](Get-Date)
@@ -133,7 +135,9 @@ function Copy-DbaServerAudit {
 
 			if ($destAudits.Name -contains $auditName) {
 				if ($force -eq $false) {
-					Write-Message -Level Warning -Message "Server audit $auditName exists at destination. Use -Force to drop and migrate."
+					$copyAuditStatus.Status = "Skipped"
+					$copyAuditStatus.Notes = "Already exists"
+					Write-Message -Level Verbose -Message "Server audit $auditName exists at destination. Use -Force to drop and migrate."
 					continue
 				}
 				else {
@@ -152,7 +156,7 @@ function Copy-DbaServerAudit {
 						}
 						catch {
 							$copyAuditStatus.Status = "Failed"
-							$copyAuditStatus
+							$copyAuditStatus | Select-DefaultView -Property DateTime, SourceServer, DestinationServer, Name, Type, Status, Notes -TypeName MigrationObject
 
 							Stop-Function -Message "Issue dropping audit from destination." -Target $auditName -ErrorRecord $_
 						}
@@ -160,13 +164,13 @@ function Copy-DbaServerAudit {
 				}
 			}
 
-			if ((Test-DbaSqlPath -SqlInstance $destServer -Path $currentAudit.Filepath) -eq $false) {
+			if (($currentAudit.Filepath) -ne $null -AND (Test-DbaSqlPath -SqlInstance $destServer -Path $currentAudit.Filepath) -eq $false) {
 				if ($Force -eq $false) {
-					Write-Message -Level Warning -Message "$($currentAudit.Filepath) does not exist on $destination. Skipping $auditName. Specify -Force to create the directory."
+					Write-Message -Level Verbose -Message "$($currentAudit.Filepath) does not exist on $destination. Skipping $auditName. Specify -Force to create the directory."
 
 					$copyAuditStatus.Status = "Skipped"
-					$copyAuditStatus.Notes = "Already exists on destination"
-					$copyAuditStatus
+					$copyAuditStatus.Notes = "Already exists"
+					$copyAuditStatus | Select-DefaultView -Property DateTime, SourceServer, DestinationServer, Name, Type, Status, Notes -TypeName MigrationObject
 					continue
 				}
 				else {
@@ -202,12 +206,12 @@ function Copy-DbaServerAudit {
 					$destServer.Query($sql)
 
 					$copyAuditStatus.Status = "Successful"
-					$copyAuditStatus
+					$copyAuditStatus | Select-DefaultView -Property DateTime, SourceServer, DestinationServer, Name, Type, Status, Notes -TypeName MigrationObject
 				}
 				catch {
 					$copyAuditStatus.Status = "Failed"
 					$copyAuditStatus.Notes = $_.Exception
-					$copyAuditStatus
+					$copyAuditStatus | Select-DefaultView -Property DateTime, SourceServer, DestinationServer, Name, Type, Status, Notes -TypeName MigrationObject
 
 					Stop-Function -Message "Issue creating audit." -Target $auditName -ErrorRecord $_
 				}
@@ -215,6 +219,6 @@ function Copy-DbaServerAudit {
 		}
 	}
 	end {
-		Test-DbaDeprecation -DeprecatedOn "1.0.0" -Silent:$false -Alias Copy-SqlAudit
+		Test-DbaDeprecation -DeprecatedOn "1.0.0" -EnableException:$false -Alias Copy-SqlAudit
 	}
 }

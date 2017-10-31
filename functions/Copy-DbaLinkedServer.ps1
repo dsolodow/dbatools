@@ -49,9 +49,11 @@ function Copy-DbaLinkedServer {
 		.PARAMETER Force
 			By default, if a Linked Server exists on the source and destination, the Linked Server is not copied over. Specifying -force will drop and recreate the Linked Server on the Destination server.
 
-		.PARAMETER Silent
-			Use this switch to disable any kind of verbose messages
-
+		.PARAMETER EnableException
+			By default, when something goes wrong we try to catch it, interpret it and give you a friendly warning message.
+			This avoids overwhelming you with "sea of red" exceptions, but is inconvenient because it basically disables advanced scripting.
+			Using this switch turns this "nice by default" feature off and enables you to catch exceptions with your own try/catch.
+			
 		.NOTES
 			Tags: WSMan, Migration, LinkedServer
 			Author: Chrissy LeMaire (@cl), netnerds.net
@@ -87,7 +89,7 @@ function Copy-DbaLinkedServer {
 		[object[]]$ExcludeLinkedServer,
 		[switch]$UpgradeSqlClient,
 		[switch]$Force,
-		[switch]$Silent
+		[switch][Alias('Silent')]$EnableException
 	)
 	begin {
 		$null = Test-ElevationRequirement -ComputerName $Source.ComputerName
@@ -288,23 +290,25 @@ function Copy-DbaLinkedServer {
 				catch { }
 
 				$linkedServerName = $currentLinkedServer.Name
-
+				
 				$copyLinkedServer = [pscustomobject]@{
-					SourceServer        = $sourceServer.Name
-					DestinationServer   = $destServer.Name
-					Name                = $linkedServerName
-					Type                = $provider
-					Status              = $null
-					DateTime            = [DbaDateTime](Get-Date)
+					SourceServer		 = $sourceServer.Name
+					DestinationServer    = $destServer.Name
+					Name				 = $linkedServerName
+					Type				 = "Linked Server"
+					Status			     = $null
+					Notes			     = $provider
+					DateTime			 = [DbaDateTime](Get-Date)
 				}
-
+				
 				# This does a check to warn of missing OleDbProviderSettings but should only be checked on SQL on Windows
 				if ($destServer.Settings.OleDbProviderSettings.Name.Length -ne 0) {
 					if (!$destServer.Settings.OleDbProviderSettings.Name -contains $provider -and !$provider.StartsWith("SQLN")) {
 						$copyLinkedServer.Status = "Skipped"
-						$copyLinkedServer
+						$copyLinkedServer.Notes = "Already exists"
+						$copyLinkedServer | Select-DefaultView -Property DateTime, SourceServer, DestinationServer, Name, Type, Status, Notes -TypeName MigrationObject
 
-						Write-Message -Level Warning -Message "$($destServer.Name) does not support the $provider provider. Skipping $linkedServerName."
+						Write-Message -Level Verbose -Message "$($destServer.Name) does not support the $provider provider. Skipping $linkedServerName."
 						continue
 					}
 				}
@@ -312,15 +316,15 @@ function Copy-DbaLinkedServer {
 				if ($destServer.LinkedServers[$linkedServerName] -ne $null) {
 					if (!$force) {
 						$copyLinkedServer.Status = "Skipped"
-						$copyLinkedServer
+						$copyLinkedServer | Select-DefaultView -Property DateTime, SourceServer, DestinationServer, Name, Type, Status, Notes -TypeName MigrationObject
 
-						Write-Message -Level Warning -Message "$linkedServerName exists $($destServer.Name). Skipping."
+						Write-Message -Level Verbose -Message "$linkedServerName exists $($destServer.Name). Skipping."
 						continue
 					}
 					else {
 						if ($Pscmdlet.ShouldProcess($destination, "Dropping $linkedServerName")) {
 							if ($currentLinkedServer.Name -eq 'repl_distributor') {
-								Write-Message -Level Warning -Message "repl_distributor cannot be dropped. Not going to try."
+								Write-Message -Level Verbose -Message "repl_distributor cannot be dropped. Not going to try."
 								continue
 							}
 
@@ -347,11 +351,11 @@ function Copy-DbaLinkedServer {
 						Write-Message -Level Verbose -Message "$linkedServerName successfully copied."
 
 						$copyLinkedServer.Status = "Successful"
-						$copyLinkedServer
+						$copyLinkedServer | Select-DefaultView -Property DateTime, SourceServer, DestinationServer, Name, Type, Status, Notes -TypeName MigrationObject
 					}
 					catch {
 						$copyLinkedServer.Status = "Failed"
-						$copyLinkedServer
+						$copyLinkedServer | Select-DefaultView -Property DateTime, SourceServer, DestinationServer, Name, Type, Status, Notes -TypeName MigrationObject
 
 						Stop-Function -Message "Issue adding linked server $destServer." -Target $linkedServerName -InnerErrorRecord $_
 						$skiplogins = $true
@@ -374,11 +378,11 @@ function Copy-DbaLinkedServer {
 									$currentlogin.Alter()
 
 									$copyLinkedServer.Status = "Successful"
-									$copyLinkedServer
+									$copyLinkedServer | Select-DefaultView -Property DateTime, SourceServer, DestinationServer, Name, Type, Status, Notes -TypeName MigrationObject
 								}
 								catch {
 									$copyLinkedServer.Status = "Failed"
-									$copyLinkedServer
+									$copyLinkedServer | Select-DefaultView -Property DateTime, SourceServer, DestinationServer, Name, Type, Status, Notes -TypeName MigrationObject
 
 									Stop-Function -Message "Failed to copy login." -Target $login -InnerErrorRecord $_
 								}
@@ -392,7 +396,7 @@ function Copy-DbaLinkedServer {
 	process {
 		if (Test-FunctionInterrupt) { return }
 		if ($SourceSqlCredential.username -ne $null) {
-			Write-Message -Level Warning -Message "You are using a SQL Credential. Note that this script requires Windows Administrator access on the source server. Attempting with $($SourceSqlCredential.Username)."
+			Write-Message -Level Verbose -Message "You are using a SQL Credential. Note that this script requires Windows Administrator access on the source server. Attempting with $($SourceSqlCredential.Username)."
 		}
 
 		$sourceServer = Connect-SqlInstance -SqlInstance $Source -SqlCredential $SourceSqlCredential
@@ -426,6 +430,6 @@ function Copy-DbaLinkedServer {
 		Copy-DbaLinkedServers $LinkedServer -Force:$force
 	}
 	end {
-		Test-DbaDeprecation -DeprecatedOn "1.0.0" -Silent:$false -Alias Copy-SqlLinkedServer
+		Test-DbaDeprecation -DeprecatedOn "1.0.0" -EnableException:$false -Alias Copy-SqlLinkedServer
 	}
 }

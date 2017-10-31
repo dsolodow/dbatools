@@ -34,9 +34,11 @@ function Install-DbaWhoIsActive {
 		.PARAMETER Confirm
 			If this switch is enabled, you will be prompted for confirmation before executing any operations that change state.
 
-		.PARAMETER Silent
-			If this switch is enabled, the internal messaging functions will be silenced.
-		
+		.PARAMETER EnableException
+			By default, when something goes wrong we try to catch it, interpret it and give you a friendly warning message.
+			This avoids overwhelming you with "sea of red" exceptions, but is inconvenient because it basically disables advanced scripting.
+			Using this switch turns this "nice by default" feature off and enables you to catch exceptions with your own try/catch.
+			
 		.PARAMETER Force
 			If this switch is enabled, the sp_WhoisActive will be downloaded from the internet even if previously cached.
 
@@ -78,7 +80,7 @@ function Install-DbaWhoIsActive {
 		[ValidateScript({Test-Path -Path $_ -PathType Leaf})]
 		[string]$LocalFile,
 		[object]$Database,
-		[switch]$Silent,
+		[switch][Alias('Silent')]$EnableException,
 		[switch]$Force
 	)
 	
@@ -139,17 +141,23 @@ function Install-DbaWhoIsActive {
 			    Unblock-File $zipfile -ErrorAction SilentlyContinue
 					
 			    if (Get-Command -ErrorAction SilentlyContinue -Name "Expand-Archive") {
-		    		Expand-Archive -Path $zipfile -DestinationPath $temp -Force
+					try {
+						Expand-Archive -Path $zipfile -DestinationPath $temp -Force
+					}
+					catch {
+						Stop-Function -Message "Unable to extract $zipfile. Archive may not be valid." -ErrorRecord $_
+						return
+					}
 				}
 				else {
-			    # Keep it backwards compatible
-				    $shell = New-Object -ComObject Shell.Application
-				    $zipPackage = $shell.NameSpace($zipfile)
-				    $destinationFolder = $shell.NameSpace($temp)
-				    Get-ChildItem "$temp\who*active*.sql" | Remove-Item		
-				    $destinationFolder.CopyHere($zipPackage.Items())
-		    	}					
-			    Remove-Item -Path $zipfile
+					# Keep it backwards compatible
+					$shell = New-Object -ComObject Shell.Application
+					$zipPackage = $shell.NameSpace($zipfile)
+					$destinationFolder = $shell.NameSpace($temp)
+					Get-ChildItem "$temp\who*active*.sql" | Remove-Item
+					$destinationFolder.CopyHere($zipPackage.Items())
+				}
+				Remove-Item -Path $zipfile
             }
 			$sqlfile = (Get-ChildItem "$temp\who*active*.sql" -ErrorAction SilentlyContinue | Select-Object -First 1).FullName
 		}
@@ -236,6 +244,6 @@ function Install-DbaWhoIsActive {
         if ($PSCmdlet.ShouldProcess($env:computername, "Post-install cleanup")) {
             Get-Item $sqlfile | Remove-Item
         }
-		Test-DbaDeprecation -DeprecatedOn "1.0.0" -Silent:$false -Alias Install-SqlWhoIsActive
+		Test-DbaDeprecation -DeprecatedOn "1.0.0" -EnableException:$false -Alias Install-SqlWhoIsActive
 	}
 }

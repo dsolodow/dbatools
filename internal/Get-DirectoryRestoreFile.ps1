@@ -4,26 +4,26 @@ function Get-DirectoryRestoreFile {
 Internal Function to get SQL Server backfiles from a specified folder
 
 .DESCRIPTION
-Takes path, checks for validity. Scans for usual backup file 
+Takes path, checks for validity. Scans for usual backup file
 #>
     [CmdletBinding()]
-    Param (
+    param (
         [parameter(Mandatory = $true, ValueFromPipeline = $true)]
         [string]$Path,
         [switch]$Recurse,
         [switch][Alias('Silent')]$EnableException
     )
-       
+
     Write-Message -Level Verbose -Message "Starting"
     Write-Message -Level Verbose -Message "Checking Path"
     if ((Test-Path $Path) -ne $true) {
         Stop-Function -Message "$Path is not reachable"
-		return
+        return
     }
     #Path needs to end \* to use includes, which is faster than Where-Object
     $PathCheckArray = $path.ToCharArray()
     if ($PathCheckArray[-2] -eq '\' -and $PathCheckArray[-1] -eq '*') {
-        #We're good    
+        #We're good
     }
     elseif ($PathCheckArray[-2] -ne '\' -and $PathCheckArray[-1] -eq '*') {
         $Path = ($PathCheckArray[0..(($PathCheckArray.length) - 2)] -join ('')) + "\*"

@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-16"?>
 <Configuration>
-	<Controls>
+    <Controls>
         <Control>
             <Name>Configuration-GroupingFormat</Name>
             <CustomControl>
@@ -12,10 +12,10 @@
                                 <CustomItem>
                                     <Text>Module: </Text>
                                     <ExpressionBinding>
-                                    	<PropertyName>Module</PropertyName>
+                                        <PropertyName>Module</PropertyName>
                                     </ExpressionBinding>
                                     <NewLine/>
-                                </CustomItem> 
+                                </CustomItem>
                             </Frame>
                         </CustomItem>
                     </CustomEntry>
@@ -23,441 +23,444 @@
             </CustomControl>
         </Control>
     </Controls>
-	
-	<ViewDefinitions>
-		<!-- Sqlcollaborative.Dbatools.Computer.DiskSpace -->
-		<View>
-			<Name>Sqlcollaborative.Dbatools.Computer.DiskSpace</Name>
-			<ViewSelectedBy>
-				<TypeName>Sqlcollaborative.Dbatools.Computer.DiskSpace</TypeName>
-			</ViewSelectedBy>
-			<TableControl>
-				<AutoSize/>
-				<TableHeaders>
-					<TableColumnHeader>
-						<Alignment>Right</Alignment>
-					</TableColumnHeader>
-					<TableColumnHeader/>
-					<TableColumnHeader/>
-					<TableColumnHeader/>
-					<TableColumnHeader/>
-					<TableColumnHeader/>
-					<TableColumnHeader/>
-					<TableColumnHeader/>
-				</TableHeaders>
-				<TableRowEntries>
-					<TableRowEntry>
-						<TableColumnItems>
-							<TableColumnItem>
-								<PropertyName>ComputerName</PropertyName>
-							</TableColumnItem>
-							<TableColumnItem>
-								<PropertyName>Name</PropertyName>
-							</TableColumnItem>
-							<TableColumnItem>
-								<PropertyName>Label</PropertyName>
-							</TableColumnItem>
-							<TableColumnItem>
-								<PropertyName>Capacity</PropertyName>
-							</TableColumnItem>
-							<TableColumnItem>
-								<PropertyName>Free</PropertyName>
-							</TableColumnItem>
-							<TableColumnItem>
-								<PropertyName>PercentFree</PropertyName>
-							</TableColumnItem>
-							<TableColumnItem>
-								<PropertyName>BlockSize</PropertyName>
-							</TableColumnItem>
-							<TableColumnItem>
-								<PropertyName>IsSqlDisk</PropertyName>
-							</TableColumnItem>
-						</TableColumnItems>
-					</TableRowEntry>
-				</TableRowEntries>
-			</TableControl>
-		</View>
-		
-		<!-- Sqlcollaborative.Dbatools.Configuration.Config -->
-		<View>
-			<Name>Sqlcollaborative.Dbatools.Configuration.Config</Name>
-			<ViewSelectedBy>
-				<TypeName>Sqlcollaborative.Dbatools.Configuration.Config</TypeName>
-			</ViewSelectedBy>
-			<GroupBy>
-                <PropertyName>Module</PropertyName> 
-                <CustomControlName>Configuration-GroupingFormat</CustomControlName>  
+
+    <ViewDefinitions>
+        <!-- Sqlcollaborative.Dbatools.Computer.DiskSpace -->
+        <View>
+            <Name>Sqlcollaborative.Dbatools.Computer.DiskSpace</Name>
+            <ViewSelectedBy>
+                <TypeName>Sqlcollaborative.Dbatools.Computer.DiskSpace</TypeName>
+            </ViewSelectedBy>
+            <TableControl>
+                <AutoSize/>
+                <TableHeaders>
+                    <TableColumnHeader>
+                        <Alignment>Right</Alignment>
+                    </TableColumnHeader>
+                    <TableColumnHeader/>
+                    <TableColumnHeader/>
+                    <TableColumnHeader/>
+                    <TableColumnHeader/>
+                    <TableColumnHeader/>
+                    <TableColumnHeader/>
+                    <TableColumnHeader/>
+                </TableHeaders>
+                <TableRowEntries>
+                    <TableRowEntry>
+                        <TableColumnItems>
+                            <TableColumnItem>
+                                <PropertyName>ComputerName</PropertyName>
+                            </TableColumnItem>
+                            <TableColumnItem>
+                                <PropertyName>Name</PropertyName>
+                            </TableColumnItem>
+                            <TableColumnItem>
+                                <PropertyName>Label</PropertyName>
+                            </TableColumnItem>
+                            <TableColumnItem>
+                                <PropertyName>Capacity</PropertyName>
+                                <Alignment>Right</Alignment>
+                            </TableColumnItem>
+                            <TableColumnItem>
+                                <PropertyName>Free</PropertyName>
+                                <Alignment>Right</Alignment>
+                            </TableColumnItem>
+                            <TableColumnItem>
+                                <PropertyName>PercentFree</PropertyName>
+                                <Alignment>Right</Alignment>
+                            </TableColumnItem>
+                            <TableColumnItem>
+                                <PropertyName>BlockSize</PropertyName>
+                                <Alignment>Right</Alignment>
+                            </TableColumnItem>
+                            <TableColumnItem>
+                                <PropertyName>IsSqlDisk</PropertyName>
+                            </TableColumnItem>
+                        </TableColumnItems>
+                    </TableRowEntry>
+                </TableRowEntries>
+            </TableControl>
+        </View>
+
+        <!-- Sqlcollaborative.Dbatools.Configuration.Config -->
+        <View>
+            <Name>Sqlcollaborative.Dbatools.Configuration.Config</Name>
+            <ViewSelectedBy>
+                <TypeName>Sqlcollaborative.Dbatools.Configuration.Config</TypeName>
+            </ViewSelectedBy>
+            <GroupBy>
+                <PropertyName>Module</PropertyName>
+                <CustomControlName>Configuration-GroupingFormat</CustomControlName>
             </GroupBy>
-			<TableControl>
-				<AutoSize/>
-				<TableHeaders>
-					<TableColumnHeader/>
-					<TableColumnHeader>
-						<Label>Value</Label>
-						<Alignment>Left</Alignment>
-					</TableColumnHeader>
-					<TableColumnHeader>
-						<Alignment>Left</Alignment>
-					</TableColumnHeader>
-				</TableHeaders>
-				<TableRowEntries>
-					<TableRowEntry>
-						<TableColumnItems>
-							<TableColumnItem>
-								<PropertyName>FullName</PropertyName>
-							</TableColumnItem>
-							<TableColumnItem>
-								<ScriptBlock>
-			if ($null -ne $_.Value)
-			{
+            <TableControl>
+                <AutoSize/>
+                <TableHeaders>
+                    <TableColumnHeader/>
+                    <TableColumnHeader>
+                        <Label>Value</Label>
+                        <Alignment>Left</Alignment>
+                    </TableColumnHeader>
+                    <TableColumnHeader>
+                        <Alignment>Left</Alignment>
+                    </TableColumnHeader>
+                </TableHeaders>
+                <TableRowEntries>
+                    <TableRowEntry>
+                        <TableColumnItems>
+                            <TableColumnItem>
+                                <PropertyName>FullName</PropertyName>
+                            </TableColumnItem>
+                            <TableColumnItem>
+                                <ScriptBlock>
+            if ($null -ne $_.Value)
+            {
               if ($_.Value.ToString().Length -le 20) { $_.Value.ToString() }
               else { $_.Value.ToString().SubString(0,17) + "..." }
-			}
-								</ScriptBlock>
-							</TableColumnItem>
-							<TableColumnItem>
-								<PropertyName>Description</PropertyName>
-							</TableColumnItem>
-						</TableColumnItems>
-					</TableRowEntry>
-				</TableRowEntries>
-			</TableControl>
-		</View>
-		
-		<!-- Sqlcollaborative.Dbatools.Connection.ManagementConnection -->
-		<View>
-			<Name>Sqlcollaborative.Dbatools.Connection.ManagementConnection</Name>
-			<ViewSelectedBy>
-				<TypeName>Sqlcollaborative.Dbatools.Connection.ManagementConnection</TypeName>
-			</ViewSelectedBy>
-			<TableControl>
-				<AutoSize/>
-				<TableHeaders>
-					<TableColumnHeader/>
-					<TableColumnHeader>
-						<Label>Available</Label>
-					</TableColumnHeader>
-					<TableColumnHeader>
-						<Label>User</Label>
-					</TableColumnHeader>
-					<TableColumnHeader>
-						<Label>Override</Label>
-					</TableColumnHeader>
-					<TableColumnHeader/>
-				</TableHeaders>
-				<TableRowEntries>
-					<TableRowEntry>
-						<TableColumnItems>
-							<TableColumnItem>
-								<PropertyName>ComputerName</PropertyName>
-							</TableColumnItem>
-							<TableColumnItem>
-								<ScriptBlock>
+            }
+                                </ScriptBlock>
+                            </TableColumnItem>
+                            <TableColumnItem>
+                                <PropertyName>Description</PropertyName>
+                            </TableColumnItem>
+                        </TableColumnItems>
+                    </TableRowEntry>
+                </TableRowEntries>
+            </TableControl>
+        </View>
+
+        <!-- Sqlcollaborative.Dbatools.Connection.ManagementConnection -->
+        <View>
+            <Name>Sqlcollaborative.Dbatools.Connection.ManagementConnection</Name>
+            <ViewSelectedBy>
+                <TypeName>Sqlcollaborative.Dbatools.Connection.ManagementConnection</TypeName>
+            </ViewSelectedBy>
+            <TableControl>
+                <AutoSize/>
+                <TableHeaders>
+                    <TableColumnHeader/>
+                    <TableColumnHeader>
+                        <Label>Available</Label>
+                    </TableColumnHeader>
+                    <TableColumnHeader>
+                        <Label>User</Label>
+                    </TableColumnHeader>
+                    <TableColumnHeader>
+                        <Label>Override</Label>
+                    </TableColumnHeader>
+                    <TableColumnHeader/>
+                </TableHeaders>
+                <TableRowEntries>
+                    <TableRowEntry>
+                        <TableColumnItems>
+                            <TableColumnItem>
+                                <PropertyName>ComputerName</PropertyName>
+                            </TableColumnItem>
+                            <TableColumnItem>
+                                <ScriptBlock>
               ($_.CimRM -like 'Success') -or ($_.CimDCOM -like 'Success') -or ($_.Wmi -like 'Success') -or ($_.PowerShellRemoting -like 'Success')
-								</ScriptBlock>
-							</TableColumnItem>
-							<TableColumnItem>
-								<ScriptBlock>
+                                </ScriptBlock>
+                            </TableColumnItem>
+                            <TableColumnItem>
+                                <ScriptBlock>
               if ($_.Credentials.UserName) { $_.Credentials.UserName }
               else { $env:USERDOMAIN + "\" + $env:USERNAME }
-								</ScriptBlock>
-							</TableColumnItem>
-							<TableColumnItem>
-								<PropertyName>OverrideExplicitCredential</PropertyName>
-							</TableColumnItem>
-							<TableColumnItem>
-								<PropertyName>DisabledConnectionTypes</PropertyName>
-							</TableColumnItem>
-						</TableColumnItems>
-					</TableRowEntry>
-				</TableRowEntries>
-			</TableControl>
-		</View>
-		
-		<!-- Sqlcollaborative.Dbatools.Database.Dependency -->
-		<View>
-			<Name>Sqlcollaborative.Dbatools.Database.Dependency</Name>
-			<ViewSelectedBy>
-				<TypeName>Sqlcollaborative.Dbatools.Database.Dependency</TypeName>
-			</ViewSelectedBy>
-			<TableControl>
-				<AutoSize/>
-				<TableHeaders>
-					<TableColumnHeader>
-						<Label>T.</Label>
-					</TableColumnHeader>
-					<TableColumnHeader>
-						<Label>Schema</Label>
-					</TableColumnHeader>
-					<TableColumnHeader/>
-					<TableColumnHeader/>
-					<TableColumnHeader/>
-					<TableColumnHeader/>
-					<TableColumnHeader/>
-					<TableColumnHeader/>
-				</TableHeaders>
-				<TableRowEntries>
-					<TableRowEntry>
-						<TableColumnItems>
-							<TableColumnItem>
-								<PropertyName>Tier</PropertyName>
-							</TableColumnItem>
-							<TableColumnItem>
-								<PropertyName>IsSchemaBound</PropertyName>
-							</TableColumnItem>
-							<TableColumnItem>
-								<PropertyName>Dependent</PropertyName>
-							</TableColumnItem>
-							<TableColumnItem>
-								<PropertyName>Type</PropertyName>
-							</TableColumnItem>
-							<TableColumnItem>
-								<PropertyName>Parent</PropertyName>
-							</TableColumnItem>
-							<TableColumnItem>
-								<PropertyName>ParentType</PropertyName>
-							</TableColumnItem>
-							<TableColumnItem>
-								<PropertyName>Owner</PropertyName>
-							</TableColumnItem>
-							<TableColumnItem>
-								<PropertyName>Object</PropertyName>
-							</TableColumnItem>
-						</TableColumnItems>
-					</TableRowEntry>
-				</TableRowEntries>
-			</TableControl>
-		</View>
-		
-		<!-- Sqlcollaborative.Dbatools.Database.BackupHistory -->
-		<View>
-			<Name>Sqlcollaborative.Dbatools.Database.BackupHistory</Name>
-			<ViewSelectedBy>
-				<TypeName>Sqlcollaborative.Dbatools.Database.BackupHistory</TypeName>
-			</ViewSelectedBy>
-			<TableControl>
-				<AutoSize/>
-				<TableHeaders>
-					<TableColumnHeader/>
-					<TableColumnHeader/>
-					<TableColumnHeader/>
-					<TableColumnHeader/>
-					<TableColumnHeader/>
-					<TableColumnHeader>
-						<Label>Start</Label>
-					</TableColumnHeader>
-					<TableColumnHeader/>
-					<TableColumnHeader>
-						<Label>End</Label>
-					</TableColumnHeader>
-				</TableHeaders>
-				<TableRowEntries>
-					<TableRowEntry>
-						<TableColumnItems>
-							<TableColumnItem>
-								<PropertyName>SqlInstance</PropertyName>
-							</TableColumnItem>
-							<TableColumnItem>
-								<PropertyName>Database</PropertyName>
-							</TableColumnItem>
-							<TableColumnItem>
-								<PropertyName>Type</PropertyName>
-							</TableColumnItem>
-							<TableColumnItem>
-								<PropertyName>TotalSize</PropertyName>
-							</TableColumnItem>
-							<TableColumnItem>
-								<PropertyName>DeviceType</PropertyName>
-							</TableColumnItem>
-							<TableColumnItem>
-								<ScriptBlock>
+                                </ScriptBlock>
+                            </TableColumnItem>
+                            <TableColumnItem>
+                                <PropertyName>OverrideExplicitCredential</PropertyName>
+                            </TableColumnItem>
+                            <TableColumnItem>
+                                <PropertyName>DisabledConnectionTypes</PropertyName>
+                            </TableColumnItem>
+                        </TableColumnItems>
+                    </TableRowEntry>
+                </TableRowEntries>
+            </TableControl>
+        </View>
+
+        <!-- Sqlcollaborative.Dbatools.Database.Dependency -->
+        <View>
+            <Name>Sqlcollaborative.Dbatools.Database.Dependency</Name>
+            <ViewSelectedBy>
+                <TypeName>Sqlcollaborative.Dbatools.Database.Dependency</TypeName>
+            </ViewSelectedBy>
+            <TableControl>
+                <AutoSize/>
+                <TableHeaders>
+                    <TableColumnHeader>
+                        <Label>T.</Label>
+                    </TableColumnHeader>
+                    <TableColumnHeader>
+                        <Label>Schema</Label>
+                    </TableColumnHeader>
+                    <TableColumnHeader/>
+                    <TableColumnHeader/>
+                    <TableColumnHeader/>
+                    <TableColumnHeader/>
+                    <TableColumnHeader/>
+                    <TableColumnHeader/>
+                </TableHeaders>
+                <TableRowEntries>
+                    <TableRowEntry>
+                        <TableColumnItems>
+                            <TableColumnItem>
+                                <PropertyName>Tier</PropertyName>
+                            </TableColumnItem>
+                            <TableColumnItem>
+                                <PropertyName>IsSchemaBound</PropertyName>
+                            </TableColumnItem>
+                            <TableColumnItem>
+                                <PropertyName>Dependent</PropertyName>
+                            </TableColumnItem>
+                            <TableColumnItem>
+                                <PropertyName>Type</PropertyName>
+                            </TableColumnItem>
+                            <TableColumnItem>
+                                <PropertyName>Parent</PropertyName>
+                            </TableColumnItem>
+                            <TableColumnItem>
+                                <PropertyName>ParentType</PropertyName>
+                            </TableColumnItem>
+                            <TableColumnItem>
+                                <PropertyName>Owner</PropertyName>
+                            </TableColumnItem>
+                            <TableColumnItem>
+                                <PropertyName>Object</PropertyName>
+                            </TableColumnItem>
+                        </TableColumnItems>
+                    </TableRowEntry>
+                </TableRowEntries>
+            </TableControl>
+        </View>
+
+        <!-- Sqlcollaborative.Dbatools.Database.BackupHistory -->
+        <View>
+            <Name>Sqlcollaborative.Dbatools.Database.BackupHistory</Name>
+            <ViewSelectedBy>
+                <TypeName>Sqlcollaborative.Dbatools.Database.BackupHistory</TypeName>
+            </ViewSelectedBy>
+            <TableControl>
+                <AutoSize/>
+                <TableHeaders>
+                    <TableColumnHeader/>
+                    <TableColumnHeader/>
+                    <TableColumnHeader/>
+                    <TableColumnHeader/>
+                    <TableColumnHeader/>
+                    <TableColumnHeader>
+                        <Label>Start</Label>
+                    </TableColumnHeader>
+                    <TableColumnHeader/>
+                    <TableColumnHeader>
+                        <Label>End</Label>
+                    </TableColumnHeader>
+                </TableHeaders>
+                <TableRowEntries>
+                    <TableRowEntry>
+                        <TableColumnItems>
+                            <TableColumnItem>
+                                <PropertyName>SqlInstance</PropertyName>
+                            </TableColumnItem>
+                            <TableColumnItem>
+                                <PropertyName>Database</PropertyName>
+                            </TableColumnItem>
+                            <TableColumnItem>
+                                <PropertyName>Type</PropertyName>
+                            </TableColumnItem>
+                            <TableColumnItem>
+                                <PropertyName>TotalSize</PropertyName>
+                            </TableColumnItem>
+                            <TableColumnItem>
+                                <PropertyName>DeviceType</PropertyName>
+                            </TableColumnItem>
+                            <TableColumnItem>
+                                <ScriptBlock>
               if ([Sqlcollaborative.Dbatools.Utility.UtilityHost]::DisableCustomDateTime) { $_.Start }
               else { $_.Start.ToString([Sqlcollaborative.Dbatools.Utility.UtilityHost]::FormatDateTime) }
-								</ScriptBlock>
-							</TableColumnItem>
-							<TableColumnItem>
-								<PropertyName>Duration</PropertyName>
-							</TableColumnItem>
-							<TableColumnItem>
-								<ScriptBlock>
+                                </ScriptBlock>
+                            </TableColumnItem>
+                            <TableColumnItem>
+                                <PropertyName>Duration</PropertyName>
+                            </TableColumnItem>
+                            <TableColumnItem>
+                                <ScriptBlock>
               if ([Sqlcollaborative.Dbatools.Utility.UtilityHost]::DisableCustomDateTime) { $_.End }
               else { $_.End.ToString([Sqlcollaborative.Dbatools.Utility.UtilityHost]::FormatDateTime) }
-								</ScriptBlock>
-							</TableColumnItem>
-						</TableColumnItems>
-					</TableRowEntry>
-				</TableRowEntries>
-			</TableControl>
-		</View>
-		
-		<!-- Sqlcollaborative.Dbatools.dbaSystem.DbatoolsExceptionRecord -->
-		<View>
-			<Name>Sqlcollaborative.Dbatools.dbaSystemDbatoolsExceptionRecord</Name>
-			<ViewSelectedBy>
-				<TypeName>Sqlcollaborative.Dbatools.dbaSystem.DbatoolsExceptionRecord</TypeName>
-			</ViewSelectedBy>
-			<TableControl>
-				<AutoSize/>
-				<TableHeaders>
-					<TableColumnHeader/>
-					<TableColumnHeader/>
-					<TableColumnHeader/>
-					<TableColumnHeader>
-						<Label>TargetObject</Label>
-					</TableColumnHeader>
-					<TableColumnHeader/>
-				</TableHeaders>
-				<TableRowEntries>
-					<TableRowEntry>
-						<TableColumnItems>
-							<TableColumnItem>
-								<PropertyName>Timestamp</PropertyName>
-							</TableColumnItem>
-							<TableColumnItem>
-								<PropertyName>FunctionName</PropertyName>
-							</TableColumnItem>
-							<TableColumnItem>
-								<PropertyName>ExceptionType</PropertyName>
-							</TableColumnItem>
-							<TableColumnItem>
-								<ScriptBlock>
-              if ($_.TargetObject.ToString().Length -le 20) { $_.TargetObject.ToString() }
-              else { $_.TargetObject.ToString().SubString(0,17) + "..." }
-								</ScriptBlock>
-							</TableColumnItem>
-							<TableColumnItem>
-								<PropertyName>Message</PropertyName>
-							</TableColumnItem>
-						</TableColumnItems>
-					</TableRowEntry>
-				</TableRowEntries>
-			</TableControl>
-		</View>
-		
-		<!-- Sqlcollaborative.Dbatools.dbaSystem.LogEntry -->
-		<View>
-			<Name>Sqlcollaborative.Dbatools.dbaSystem.LogEntry</Name>
-			<ViewSelectedBy>
-				<TypeName>Sqlcollaborative.Dbatools.dbaSystem.LogEntry</TypeName>
-			</ViewSelectedBy>
-			<TableControl>
-				<AutoSize/>
-				<TableHeaders>
-					<TableColumnHeader/>
-					<TableColumnHeader/>
-					<TableColumnHeader/>
-					<TableColumnHeader>
-						<Label>TargetObject</Label>
-					</TableColumnHeader>
-					<TableColumnHeader/>
-				</TableHeaders>
-				<TableRowEntries>
-					<TableRowEntry>
-						<TableColumnItems>
-							<TableColumnItem>
-								<PropertyName>Timestamp</PropertyName>
-							</TableColumnItem>
-							<TableColumnItem>
-								<PropertyName>FunctionName</PropertyName>
-							</TableColumnItem>
-							<TableColumnItem>
-								<PropertyName>Level</PropertyName>
-							</TableColumnItem>
-							<TableColumnItem>
-								<ScriptBlock>
-              if ($_.TargetObject.ToString().Length -le 20) { $_.TargetObject.ToString() }
-              else { $_.TargetObject.ToString().SubString(0,17) + "..." }
-								</ScriptBlock>
-							</TableColumnItem>
-							<TableColumnItem>
-								<PropertyName>Message</PropertyName>
-							</TableColumnItem>
-						</TableColumnItems>
-					</TableRowEntry>
-				</TableRowEntries>
-			</TableControl>
-		</View>
-		
-		<!-- Sqlcollaborative.Dbatools.Validation.LinkedServerResult -->
-		<View>
-			<Name>Sqlcollaborative.Dbatools.Validation.LinkedServerResult</Name>
-			<ViewSelectedBy>
-				<TypeName>Sqlcollaborative.Dbatools.Validation.LinkedServerResult</TypeName>
-			</ViewSelectedBy>
-			<TableControl>
-				<AutoSize/>
-				<TableHeaders>
-					<TableColumnHeader/>
-					<TableColumnHeader/>
-					<TableColumnHeader/>
-					<TableColumnHeader/>
-					<TableColumnHeader/>
-				</TableHeaders>
-				<TableRowEntries>
-					<TableRowEntry>
-						<TableColumnItems>
-							<TableColumnItem>
-								<PropertyName>SqlInstance</PropertyName>
-							</TableColumnItem>
-							<TableColumnItem>
-								<PropertyName>LinkedServerName</PropertyName>
-							</TableColumnItem>
-							<TableColumnItem>
-								<PropertyName>RemoteServer</PropertyName>
-							</TableColumnItem>
-							<TableColumnItem>
-								<PropertyName>Connectivity</PropertyName>
-							</TableColumnItem>
-							<TableColumnItem>
-								<PropertyName>Result</PropertyName>
-							</TableColumnItem>
-						</TableColumnItems>
-					</TableRowEntry>
-				</TableRowEntries>
-			</TableControl>
-		</View>
-				<!-- dbatools.MigrationObject -->
-		<View>
-			<Name>dbatools.MigrationObject</Name>
-			<ViewSelectedBy>
-				<TypeName>dbatools.MigrationObject</TypeName>
-			</ViewSelectedBy>
-			<TableControl>
-				<AutoSize/>
-				<TableHeaders>
-					<TableColumnHeader/>
-					<TableColumnHeader/>
-					<TableColumnHeader/>
-					<TableColumnHeader/>
-				</TableHeaders>
-				<TableRowEntries>
-					<TableRowEntry>
-						<TableColumnItems>
-							<TableColumnItem>
-								<PropertyName>Type</PropertyName>
-							</TableColumnItem>
-							<TableColumnItem>
-								<PropertyName>Name</PropertyName>
-							</TableColumnItem>
-							<TableColumnItem>
-								<PropertyName>Status</PropertyName>
-							</TableColumnItem>
-							<TableColumnItem>
-								<PropertyName>Notes</PropertyName>
-							</TableColumnItem>
-						</TableColumnItems>
-					</TableRowEntry>
-				</TableRowEntries>
-			</TableControl>
-		</View>
-	</ViewDefinitions>
-</Configuration>
+                                </ScriptBlock>
+                            </TableColumnItem>
+                        </TableColumnItems>
+                    </TableRowEntry>
+                </TableRowEntries>
+            </TableControl>
+        </View>
 
+        <!-- Sqlcollaborative.Dbatools.dbaSystem.DbatoolsExceptionRecord -->
+        <View>
+            <Name>Sqlcollaborative.Dbatools.dbaSystemDbatoolsExceptionRecord</Name>
+            <ViewSelectedBy>
+                <TypeName>Sqlcollaborative.Dbatools.dbaSystem.DbatoolsExceptionRecord</TypeName>
+            </ViewSelectedBy>
+            <TableControl>
+                <AutoSize/>
+                <TableHeaders>
+                    <TableColumnHeader/>
+                    <TableColumnHeader/>
+                    <TableColumnHeader/>
+                    <TableColumnHeader>
+                        <Label>TargetObject</Label>
+                    </TableColumnHeader>
+                    <TableColumnHeader/>
+                </TableHeaders>
+                <TableRowEntries>
+                    <TableRowEntry>
+                        <TableColumnItems>
+                            <TableColumnItem>
+                                <PropertyName>Timestamp</PropertyName>
+                            </TableColumnItem>
+                            <TableColumnItem>
+                                <PropertyName>FunctionName</PropertyName>
+                            </TableColumnItem>
+                            <TableColumnItem>
+                                <PropertyName>ExceptionType</PropertyName>
+                            </TableColumnItem>
+                            <TableColumnItem>
+                                <ScriptBlock>
+              if ($_.TargetObject.ToString().Length -le 20) { $_.TargetObject.ToString() }
+              else { $_.TargetObject.ToString().SubString(0,17) + "..." }
+                                </ScriptBlock>
+                            </TableColumnItem>
+                            <TableColumnItem>
+                                <PropertyName>Message</PropertyName>
+                            </TableColumnItem>
+                        </TableColumnItems>
+                    </TableRowEntry>
+                </TableRowEntries>
+            </TableControl>
+        </View>
+
+        <!-- Sqlcollaborative.Dbatools.dbaSystem.LogEntry -->
+        <View>
+            <Name>Sqlcollaborative.Dbatools.dbaSystem.LogEntry</Name>
+            <ViewSelectedBy>
+                <TypeName>Sqlcollaborative.Dbatools.dbaSystem.LogEntry</TypeName>
+            </ViewSelectedBy>
+            <TableControl>
+                <AutoSize/>
+                <TableHeaders>
+                    <TableColumnHeader/>
+                    <TableColumnHeader/>
+                    <TableColumnHeader/>
+                    <TableColumnHeader>
+                        <Label>TargetObject</Label>
+                    </TableColumnHeader>
+                    <TableColumnHeader/>
+                </TableHeaders>
+                <TableRowEntries>
+                    <TableRowEntry>
+                        <TableColumnItems>
+                            <TableColumnItem>
+                                <PropertyName>Timestamp</PropertyName>
+                            </TableColumnItem>
+                            <TableColumnItem>
+                                <PropertyName>FunctionName</PropertyName>
+                            </TableColumnItem>
+                            <TableColumnItem>
+                                <PropertyName>Level</PropertyName>
+                            </TableColumnItem>
+                            <TableColumnItem>
+                                <ScriptBlock>
+              if ($_.TargetObject.ToString().Length -le 20) { $_.TargetObject.ToString() }
+              else { $_.TargetObject.ToString().SubString(0,17) + "..." }
+                                </ScriptBlock>
+                            </TableColumnItem>
+                            <TableColumnItem>
+                                <PropertyName>Message</PropertyName>
+                            </TableColumnItem>
+                        </TableColumnItems>
+                    </TableRowEntry>
+                </TableRowEntries>
+            </TableControl>
+        </View>
+
+        <!-- Sqlcollaborative.Dbatools.Validation.LinkedServerResult -->
+        <View>
+            <Name>Sqlcollaborative.Dbatools.Validation.LinkedServerResult</Name>
+            <ViewSelectedBy>
+                <TypeName>Sqlcollaborative.Dbatools.Validation.LinkedServerResult</TypeName>
+            </ViewSelectedBy>
+            <TableControl>
+                <AutoSize/>
+                <TableHeaders>
+                    <TableColumnHeader/>
+                    <TableColumnHeader/>
+                    <TableColumnHeader/>
+                    <TableColumnHeader/>
+                    <TableColumnHeader/>
+                </TableHeaders>
+                <TableRowEntries>
+                    <TableRowEntry>
+                        <TableColumnItems>
+                            <TableColumnItem>
+                                <PropertyName>SqlInstance</PropertyName>
+                            </TableColumnItem>
+                            <TableColumnItem>
+                                <PropertyName>LinkedServerName</PropertyName>
+                            </TableColumnItem>
+                            <TableColumnItem>
+                                <PropertyName>RemoteServer</PropertyName>
+                            </TableColumnItem>
+                            <TableColumnItem>
+                                <PropertyName>Connectivity</PropertyName>
+                            </TableColumnItem>
+                            <TableColumnItem>
+                                <PropertyName>Result</PropertyName>
+                            </TableColumnItem>
+                        </TableColumnItems>
+                    </TableRowEntry>
+                </TableRowEntries>
+            </TableControl>
+        </View>
+                <!-- dbatools.MigrationObject -->
+        <View>
+            <Name>dbatools.MigrationObject</Name>
+            <ViewSelectedBy>
+                <TypeName>dbatools.MigrationObject</TypeName>
+            </ViewSelectedBy>
+            <TableControl>
+                <AutoSize/>
+                <TableHeaders>
+                    <TableColumnHeader/>
+                    <TableColumnHeader/>
+                    <TableColumnHeader/>
+                    <TableColumnHeader/>
+                </TableHeaders>
+                <TableRowEntries>
+                    <TableRowEntry>
+                        <TableColumnItems>
+                            <TableColumnItem>
+                                <PropertyName>Type</PropertyName>
+                            </TableColumnItem>
+                            <TableColumnItem>
+                                <PropertyName>Name</PropertyName>
+                            </TableColumnItem>
+                            <TableColumnItem>
+                                <PropertyName>Status</PropertyName>
+                            </TableColumnItem>
+                            <TableColumnItem>
+                                <PropertyName>Notes</PropertyName>
+                            </TableColumnItem>
+                        </TableColumnItems>
+                    </TableRowEntry>
+                </TableRowEntries>
+            </TableControl>
+        </View>
+    </ViewDefinitions>
+</Configuration>
 <!-- SIG # Begin signature block -->
 <!-- MIIcYgYJKoZIhvcNAQcCoIIcUzCCHE8CAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB -->
 <!-- gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR -->
-<!-- AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUK2N2MCS7foewOwNuNoCCbLwQ -->
-<!-- 0wmggheRMIIFGjCCBAKgAwIBAgIQAsF1KHTVwoQxhSrYoGRpyjANBgkqhkiG9w0B -->
+<!-- AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQULE3KaP+5cDv8xSIV/y6BJ+Di -->
+<!-- gWOggheRMIIFGjCCBAKgAwIBAgIQAsF1KHTVwoQxhSrYoGRpyjANBgkqhkiG9w0B -->
 <!-- AQsFADByMQswCQYDVQQGEwJVUzEVMBMGA1UEChMMRGlnaUNlcnQgSW5jMRkwFwYD -->
 <!-- VQQLExB3d3cuZGlnaWNlcnQuY29tMTEwLwYDVQQDEyhEaWdpQ2VydCBTSEEyIEFz -->
 <!-- c3VyZWQgSUQgQ29kZSBTaWduaW5nIENBMB4XDTE3MDUwOTAwMDAwMFoXDTIwMDUx -->
@@ -588,22 +591,22 @@
 <!-- c3N1cmVkIElEIENvZGUgU2lnbmluZyBDQQIQAsF1KHTVwoQxhSrYoGRpyjAJBgUr -->
 <!-- DgMCGgUAoHgwGAYKKwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMx -->
 <!-- DAYKKwYBBAGCNwIBBDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkq -->
-<!-- hkiG9w0BCQQxFgQUG/ke4HhfQIDAkl3r0F9VLd8Qx+owDQYJKoZIhvcNAQEBBQAE -->
-<!-- ggEALXcRMQczBTYV7aN7dPv8ufjJpkHZ4pmNiepfoeLKOSlxfayA2kSbes0Uwtou -->
-<!-- 8kn7sTWcTUT82dNLoeRo9NVx06RUPy1rDGOCJXaJkkSrnkLOWj54Vf7L+4b0rGeR -->
-<!-- fgj5TyCgEziewilFLM2Sis7BoxU83vW73BfJ32ibuiU1d4t/MvpZC0opd+H/zw+/ -->
-<!-- WgV3aXQVZM9P/WxW5ARhDJE/364YyTG3/+CgwgFwxblB2OtyO/gXSGNHQr3TAaVS -->
-<!-- xkqYyO4W9fXs3UYFqMc5MFz0OAVgkIN8AYF8OeSowIhCdUxmcwuZmK7+oWK/zM5A -->
-<!-- Bd65Mwxg5ghSG7167NP/5mY1CaGCAg8wggILBgkqhkiG9w0BCQYxggH8MIIB+AIB -->
+<!-- hkiG9w0BCQQxFgQUmupNg4B91glYRXcsduNh7LSaFBIwDQYJKoZIhvcNAQEBBQAE -->
+<!-- ggEAQlqUe02HbUgVsW13mexwEW2CASQye/7ukLPOpdE73OumL6VCOSAxU7nR8MIi -->
+<!-- SOhYt0jfGKzPrZrDH0gMObfpxhmpgNdAwz992Rv173Lfl/ISu0W6eBEXO7gS9BRC -->
+<!-- Ki+14sYZdId+ttyrZze5rUaQFn+AaRC1BtCJOKNx32Bc/mOh7RAXUS73jaZF6U+K -->
+<!-- Q2Md4zatFjZ4Mok/w2LoWE5+NbS3ZeyXiXOAuqtTqkHOJldB0eKN7HgSXWbfNR94 -->
+<!-- IUjKn3d+GFkq5ZNxzFdhB+ywnDpjsryHRo46KLQdNhFzd02UhzndNAycmEEMhXwE -->
+<!-- 9AECfM+OTIXxkCfTzcn9UNC3u6GCAg8wggILBgkqhkiG9w0BCQYxggH8MIIB+AIB -->
 <!-- ATB2MGIxCzAJBgNVBAYTAlVTMRUwEwYDVQQKEwxEaWdpQ2VydCBJbmMxGTAXBgNV -->
 <!-- BAsTEHd3dy5kaWdpY2VydC5jb20xITAfBgNVBAMTGERpZ2lDZXJ0IEFzc3VyZWQg -->
 <!-- SUQgQ0EtMQIQAwGaAjr/WLFr1tXq5hfwZjAJBgUrDgMCGgUAoF0wGAYJKoZIhvcN -->
-<!-- AQkDMQsGCSqGSIb3DQEHATAcBgkqhkiG9w0BCQUxDxcNMTcxMDMwMDIyNTEzWjAj -->
-<!-- BgkqhkiG9w0BCQQxFgQUry+KQSOcqwIIyC7JN34gZPFoDb8wDQYJKoZIhvcNAQEB -->
-<!-- BQAEggEAf4Nmyb5Z7r779ELIdZn0ROBi7jvJnfU3nQjfAPUrNpdXOXNwtaFHLh5+ -->
-<!-- Puz+O90nPlyLVu5Khy/9MdbGLoLSHNqxCwwrWrqkeuzs77mi2PrMxZZcoj/8TYBu -->
-<!-- 5DVpoJczZ8JXFd2WcpQZB3/yVooU1jGrI+YvECsrJJqa9aWLEA2Ao4+hSzBQouA3 -->
-<!-- V/XTsYBIiXqp7E2P+DOy1inzvDYrmwM6ExKCy263N34QgjZ/0GNO8ERjDT9lbCPq -->
-<!-- ++MiLo4b3Z1eB5er2YgB9/u0PUY7hKXNHUtEJEdu1VlVkxhCvsJw3OBESuN1WBow -->
-<!-- Ln3q9QjBsErfarLKKtmMrrkobZA0Zg== -->
+<!-- AQkDMQsGCSqGSIb3DQEHATAcBgkqhkiG9w0BCQUxDxcNMTgwMTAyMDY0ODI5WjAj -->
+<!-- BgkqhkiG9w0BCQQxFgQU1BSp8yRdwEMcLPl4Qlil9gN9K68wDQYJKoZIhvcNAQEB -->
+<!-- BQAEggEAO2PPx207bvvdZRJktjIuEVaO6Ad474RfDDI825x7/+xVICn5Ygo19LoA -->
+<!-- 2oUoircvJU3NcQWEDyqCok0QL6u1ZQPPEwmWrsnZAbbDVaqrcHNgg2o0mA0H+3Ae -->
+<!-- 2SP4V3nCz5LnDvPgiQMsFqBCjRSQrWU0U/GUnDGyVTgvPxDEIyXQyp+03AwX9dOI -->
+<!-- L5dP0oah/rK68qVR3OHI8r6lhJwsImeytiTwVoCVUkggjDbmuj+Ed+FsMjqBZvJX -->
+<!-- +nvEP78OjyM0GQpiH5Q6XAlzUZmGr1cAwijYjPaIM9YW4YYGCavbFEPjk4VvKjlK -->
+<!-- W4Ej1tfXG1e/05RILr0Tjwjw4h/4Jg== -->
 <!-- SIG # End signature block -->

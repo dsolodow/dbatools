@@ -1,6 +1,6 @@
 function Invoke-DbaLogShipping {
 	<#
-.SYNOPSIS 
+.SYNOPSIS
 Invoke-DbaLogShipping sets up log shipping for one or more databases
 
 .DESCRIPTION
@@ -21,36 +21,36 @@ Also have the credentials ready to set the folder permissions
 The backup destination needs to be shared and have the share privileges of FULL CONTROL to Everyone.
 
 ** NTFS permissions
-The backup destination must have at least read/write permissions for the primary instance agent account. 
+The backup destination must have at least read/write permissions for the primary instance agent account.
 The backup destination must have at least read permissions for the secondary instance agent account.
 The copy destination must have at least read/write permission for the secondary instance agent acount.
 
 .PARAMETER SourceSqlInstance
-Source SQL Server instance which contains the databases to be log shipped. 
+Source SQL Server instance which contains the databases to be log shipped.
 You must have sysadmin access and server version must be SQL Server version 2000 or greater.
 
 .PARAMETER DestinationSqlInstance
-Destination SQL Server instance which contains the databases to be log shipped. 
+Destination SQL Server instance which contains the databases to be log shipped.
 You must have sysadmin access and server version must be SQL Server version 2000 or greater.
 
 .PARAMETER SourceSqlCredential
 Allows you to login to servers using SQL Logins as opposed to Windows Auth/Integrated/Trusted. To use:
-$scred = Get-Credential, then pass $scred object to the -SourceSqlCredential parameter. 
+$scred = Get-Credential, then pass $scred object to the -SourceSqlCredential parameter.
 To connect as a different Windows user, run PowerShell as that user.
 
 .PARAMETER SourceCredential
 Allows you to login to servers using credentials for the paths like the backup path. To use:
-$scred = Get-Credential, then pass $scred object to the -SourceCredential parameter. 
+$scred = Get-Credential, then pass $scred object to the -SourceCredential parameter.
 To connect as a different Windows user, run PowerShell as that user.
 
 .PARAMETER DestinationSqlCredential
 Allows you to login to servers using SQL Logins as opposed to Windows Auth/Integrated/Trusted. To use:
-$scred = Get-Credential, then pass $scred object to the -DestinationSqlCredential parameter. 
+$scred = Get-Credential, then pass $scred object to the -DestinationSqlCredential parameter.
 To connect as a different Windows user, run PowerShell as that user.
 
 .PARAMETER DestinationCredential
 Allows you to login to servers using credentials for the paths like the copy and restore path. To use:
-$scred = Get-Credential, then pass $scred object to the -DestinationCredential parameter. 
+$scred = Get-Credential, then pass $scred object to the -DestinationCredential parameter.
 To connect as a different Windows user, run PowerShell as that user.
 
 .PARAMETER Database
@@ -89,7 +89,7 @@ The number of type periods to occur between each execution of the backup job.
 
 .PARAMETER BackupScheduleFrequencySubdayType
 Specifies the units for the subday FrequencyInterval.
-Allowed values are "Seconds", "Minutes", "Hours"
+Allowed values are "Time", "Seconds", "Minutes", "Hours"
 
 .PARAMETER BackupScheduleFrequencySubdayInterval
 The number of subday type periods to occur between each execution of the backup job.
@@ -98,7 +98,7 @@ The number of subday type periods to occur between each execution of the backup 
 A job's occurrence of FrequencyInterval in each month, if FrequencyInterval is 32 (monthlyrelative).
 
 .PARAMETER BackupScheduleFrequencyRecurrenceFactor
-The number of weeks or months between the scheduled execution of a job. FrequencyRecurrenceFactor is used only if FrequencyType is 8, "Weekly", 16, "Monthly", 32 or "MonthlyRelative". 
+The number of weeks or months between the scheduled execution of a job. FrequencyRecurrenceFactor is used only if FrequencyType is 8, "Weekly", 16, "Monthly", 32 or "MonthlyRelative".
 
 .PARAMETER BackupScheduleStartDate
 The date on which execution of a job can begin.
@@ -108,12 +108,12 @@ The date on which execution of a job can stop.
 
 .PARAMETER BackupScheduleStartTime
 The time on any day to begin execution of a job. Format HHMMSS / 24 hour clock.
-Example: '010000' for 01:00:00 AM. 
+Example: '010000' for 01:00:00 AM.
 Example: '140000' for 02:00:00 PM.
 
 .PARAMETER BackupScheduleEndTime
 The time on any day to end execution of a job. Format HHMMSS / 24 hour clock.
-Example: '010000' for 01:00:00 AM. 
+Example: '010000' for 01:00:00 AM.
 Example: '140000' for 02:00:00 PM.
 
 .PARAMETER BackupThreshold
@@ -153,7 +153,7 @@ The number of type periods to occur between each execution of the copy job.
 
 .PARAMETER CopyScheduleFrequencySubdayType
 Specifies the units for the subday FrequencyInterval.
-Allowed values are "Seconds", "Minutes", "Hours"
+Allowed values are "Time", "Seconds", "Minutes", "Hours"
 
 .PARAMETER CopyScheduleFrequencySubdayInterval
 The number of subday type periods to occur between each execution of the copy job.
@@ -162,7 +162,7 @@ The number of subday type periods to occur between each execution of the copy jo
 A job's occurrence of FrequencyInterval in each month, if FrequencyInterval is 32 (monthlyrelative).
 
 .PARAMETER CopyScheduleFrequencyRecurrenceFactor
-The number of weeks or months between the scheduled execution of a job. FrequencyRecurrenceFactor is used only if FrequencyType is 8, "Weekly", 16, "Monthly", 32 or "MonthlyRelative". 
+The number of weeks or months between the scheduled execution of a job. FrequencyRecurrenceFactor is used only if FrequencyType is 8, "Weekly", 16, "Monthly", 32 or "MonthlyRelative".
 
 .PARAMETER CopyScheduleStartDate
 The date on which execution of a job can begin.
@@ -172,12 +172,12 @@ The date on which execution of a job can stop.
 
 .PARAMETER CopyScheduleStartTime
 The time on any day to begin execution of a job. Format HHMMSS / 24 hour clock.
-Example: '010000' for 01:00:00 AM. 
+Example: '010000' for 01:00:00 AM.
 Example: '140000' for 02:00:00 PM.
 
 .PARAMETER CopyScheduleEndTime
 The time on any day to end execution of a job. Format HHMMSS / 24 hour clock.
-Example: '010000' for 01:00:00 AM. 
+Example: '010000' for 01:00:00 AM.
 Example: '140000' for 02:00:00 PM.
 
 .PARAMETER DisconnectUsers
@@ -198,13 +198,17 @@ The default value is 14420
 If this parameter is set the database will be in recoery mode. The database will not be readable.
 This setting is default.
 
+.PARAMETER NoInitialization
+If this parameter is set the secondary database will not be initialized. 
+The database needs to be on the secondary instance in recovery mode.
+
 .PARAMETER PrimaryMonitorServer
 Is the name of the monitor server for the primary server.
 The default is the name of the primary sql server.
 
 .PARAMETER PrimaryMonitorCredential
-Allows you to login to enter a secure credential. Only needs to be used when the PrimaryMonitorServerSecurityMode is 0 or "sqlserver" 
-To use: $scred = Get-Credential, then pass $scred object to the -PrimaryMonitorCredential parameter. 
+Allows you to login to enter a secure credential. Only needs to be used when the PrimaryMonitorServerSecurityMode is 0 or "sqlserver"
+To use: $scred = Get-Credential, then pass $scred object to the -PrimaryMonitorCredential parameter.
 
 .PARAMETER PrimaryMonitorServerSecurityMode
 The security mode used to connect to the monitor server for the primary server. Allowed values are 0, "sqlserver", 1, "windows"
@@ -257,7 +261,7 @@ The number of type periods to occur between each execution of the restore job.
 
 .PARAMETER RestoreScheduleFrequencySubdayType
 Specifies the units for the subday FrequencyInterval.
-Allowed values are "Seconds", "Minutes", "Hours"
+Allowed values are "Time", "Seconds", "Minutes", "Hours"
 
 .PARAMETER RestoreScheduleFrequencySubdayInterval
 The number of subday type periods to occur between each execution of the restore job.
@@ -266,7 +270,7 @@ The number of subday type periods to occur between each execution of the restore
 A job's occurrence of FrequencyInterval in each month, if FrequencyInterval is 32 (monthlyrelative).
 
 .PARAMETER RestoreScheduleFrequencyRecurrenceFactor
-The number of weeks or months between the scheduled execution of a job. FrequencyRecurrenceFactor is used only if FrequencyType is 8, "Weekly", 16, "Monthly", 32 or "MonthlyRelative". 
+The number of weeks or months between the scheduled execution of a job. FrequencyRecurrenceFactor is used only if FrequencyType is 8, "Weekly", 16, "Monthly", 32 or "MonthlyRelative".
 
 .PARAMETER RestoreScheduleStartDate
 The date on which execution of a job can begin.
@@ -276,16 +280,16 @@ The date on which execution of a job can stop.
 
 .PARAMETER RestoreScheduleStartTime
 The time on any day to begin execution of a job. Format HHMMSS / 24 hour clock.
-Example: '010000' for 01:00:00 AM. 
+Example: '010000' for 01:00:00 AM.
 Example: '140000' for 02:00:00 PM.
 
 .PARAMETER RestoreScheduleEndTime
 The time on any day to end execution of a job. Format HHMMSS / 24 hour clock.
-Example: '010000' for 01:00:00 AM. 
+Example: '010000' for 01:00:00 AM.
 Example: '140000' for 02:00:00 PM.
 
 .PARAMETER RestoreThreshold
-The number of minutes allowed to elapse between restore operations before an alert is generated. 
+The number of minutes allowed to elapse between restore operations before an alert is generated.
 The default value = 0
 
 .PARAMETER SecondaryDatabaseSuffix
@@ -296,8 +300,8 @@ Is the name of the monitor server for the secondary server.
 The default is the name of the secondary sql server.
 
 .PARAMETER SecondaryMonitorCredential
-Allows you to login to enter a secure credential. Only needs to be used when the SecondaryMonitorServerSecurityMode is 0 or "sqlserver" 
-To use: $scred = Get-Credential, then pass $scred object to the -SecondaryMonitorCredential parameter. 
+Allows you to login to enter a secure credential. Only needs to be used when the SecondaryMonitorServerSecurityMode is 0 or "sqlserver"
+To use: $scred = Get-Credential, then pass $scred object to the -SecondaryMonitorCredential parameter.
 
 .PARAMETER SecondaryMonitorServerSecurityMode
 The security mode used to connect to the monitor server for the secondary server. Allowed values are 0, "sqlserver", 1, "windows"
@@ -310,9 +314,15 @@ ENables the Threshold alert for the secondary database
 If this parameter is set the database will be set to standby mode making the database readable.
 If not set the database will be in recovery mode.
 
+.PARAMETER StandbyDirectory
+Directory to place the standby file(s) in
+
 .PARAMETER UseExistingFullBackup
-If the database is not initialized on the secondary instance it can be done by selecting an existing full backup 
+If the database is not initialized on the secondary instance it can be done by selecting an existing full backup
 and restore it for you.
+
+.PARAMETER UseBackupFolder
+This enables the user to specifiy a specific backup folder containing one or more backup files to initialize the database on the secondary instance.
 
 .PARAMETER WhatIf
 Shows what would happen if the command were to run. No actions are actually performed.
@@ -321,18 +331,16 @@ Shows what would happen if the command were to run. No actions are actually perf
 Prompts you for confirmation before executing any changing operations within the command.
 
 .PARAMETER EnableException
-		By default, when something goes wrong we try to catch it, interpret it and give you a friendly warning message.
-		This avoids overwhelming you with "sea of red" exceptions, but is inconvenient because it basically disables advanced scripting.
-		Using this switch turns this "nice by default" feature off and enables you to catch exceptions with your own try/catch.
-		
+Use this switch to disable any kind of verbose messages
+
 .PARAMETER Force
 The force parameter will ignore some errors in the parameters and assume defaults.
 It will also remove the any present schedules with the same name for the specific job.
 
-.NOTES 
+.NOTES
 Author: Sander Stad (@sqlstad, sqlstad.nl)
 Tags: Log shippin, disaster recovery
-	
+
 Website: https://dbatools.io
 Copyright: (C) Chrissy LeMaire, clemaire@gmail.com
 License: GNU GPL v3 https://opensource.org/licenses/GPL-3.0
@@ -340,10 +348,10 @@ License: GNU GPL v3 https://opensource.org/licenses/GPL-3.0
 .LINK
 https://dbatools.io/Invoke-DbaLogShipping
 
-.EXAMPLE   
+.EXAMPLE
 Invoke-DbaLogShipping -SourceSqlInstance sql1 -DestinationSqlInstance sql2 -Database db1 -BackupNetworkPath \\sql1\logshipping -BackupLocalPath D:\Data\logshipping -BackupScheduleFrequencyType daily -BackupScheduleFrequencyInterval 1 -CompressBackup -CopyScheduleFrequencyType daily -CopyScheduleFrequencyInterval 1 -GenerateFullBackup -RestoreScheduleFrequencyType daily -RestoreScheduleFrequencyInterval 1 -SecondaryDatabaseSuffix DR -CopyDestinationFolder \\sql2\logshippingdest -Force
 
-Sets up log shiping for database "db1" with the backup path to a network share allowing local backups. 
+Sets up log shiping for database "db1" with the backup path to a network share allowing local backups.
 It creates daily schedules for the backup, copy and restore job with all the defaults to be executed every 15 minutes daily.
 The secondary databse will be called "db1_LS".
 
@@ -412,7 +420,7 @@ The script will show a message that the copy destination has not been supplied a
 		[object[]]$BackupScheduleFrequencyInterval,
 
 		[parameter(Mandatory = $false)]
-		[ValidateSet("Seconds", "Minutes", "Hours")]
+		[ValidateSet('Time', 'Seconds', 'Minutes', 'Hours')]
 		[object]$BackupScheduleFrequencySubdayType,
 
 		[parameter(Mandatory = $false)]
@@ -466,7 +474,7 @@ The script will show a message that the copy destination has not been supplied a
 		[object[]]$CopyScheduleFrequencyInterval,
 
 		[parameter(Mandatory = $false)]
-		[ValidateSet("Seconds", "Minutes", "Hours")]
+		[ValidateSet('Time', 'Seconds', 'Minutes', 'Hours')]
 		[object]$CopyScheduleFrequencySubdayType,
 
 		[parameter(Mandatory = $false)]
@@ -506,12 +514,15 @@ The script will show a message that the copy destination has not been supplied a
 		[parameter(Mandatory = $false)]
 		[switch]$NoRecovery,
 
+		[parameter(Mandatory = $false)]
+		[switch]$NoInitialization,
+
 		[Parameter(Mandatory = $false)]
 		[string]$PrimaryMonitorServer,
 
 		[Parameter(Mandatory = $false)]
 		[System.Management.Automation.PSCredential]
-		$PrimaryMonitorCredential, 
+		$PrimaryMonitorCredential,
 
 		[Parameter(Mandatory = $false)]
 		[ValidateSet(0, "sqlserver", 1, "windows")]
@@ -552,7 +563,7 @@ The script will show a message that the copy destination has not been supplied a
 		[object[]]$RestoreScheduleFrequencyInterval,
 
 		[parameter(Mandatory = $false)]
-		[ValidateSet("Seconds", "Minutes", "Hours")]
+		[ValidateSet('Time', 'Seconds', 'Minutes', 'Hours')]
 		[object]$RestoreScheduleFrequencySubdayType,
 
 		[parameter(Mandatory = $false)]
@@ -588,7 +599,7 @@ The script will show a message that the copy destination has not been supplied a
 
 		[Parameter(Mandatory = $false)]
 		[System.Management.Automation.PSCredential]
-		$SecondaryMonitorCredential, 
+		$SecondaryMonitorCredential,
 
 		[Parameter(Mandatory = $false)]
 		[ValidateSet(0, "sqlserver", 1, "windows")]
@@ -601,7 +612,13 @@ The script will show a message that the copy destination has not been supplied a
 		[switch]$Standby,
 
 		[parameter(Mandatory = $false)]
+		[string]$StandbyDirectory,
+
+		[parameter(Mandatory = $false)]
 		[switch]$UseExistingFullBackup,
+
+		[parameter(Mandatory = $false)]
+		[string]$UseBackupFolder,
 
 		[switch]$Force,
 
@@ -617,7 +634,7 @@ The script will show a message that the copy destination has not been supplied a
 			$SourceServer = Connect-SqlInstance -SqlInstance $SourceSqlInstance -SqlCredential $SourceSqlCredential
 		}
 		catch {
-			Stop-Function -Message "Could not connect to Sql Server instance $SourceSqlInstance" -InnerErrorRecord $_ -Target $SourceSqlInstance 
+			Stop-Function -Message "Could not connect to Sql Server instance $SourceSqlInstance" -InnerErrorRecord $_ -Target $SourceSqlInstance
 			return
 		}
 
@@ -627,14 +644,14 @@ The script will show a message that the copy destination has not been supplied a
 			$DestinationServer = Connect-SqlInstance -SqlInstance $DestinationSqlInstance -SqlCredential $DestinationSqlCredential
 		}
 		catch {
-			Stop-Function -Message "Could not connect to Sql Server instance $DestinationSqlInstance" -InnerErrorRecord $_ -Target $DestinationSqlInstance 
+			Stop-Function -Message "Could not connect to Sql Server instance $DestinationSqlInstance" -InnerErrorRecord $_ -Target $DestinationSqlInstance
 			return
 		}
 
 		# Check the instance if it is a named instance
 		$SourceServerName, $SourceInstanceName = $SourceSqlInstance.Split("\")
 		$DestinationServerName, $DestinationInstanceName = $DestinationSqlInstance.Split("\")
-        
+
 		if ($SourceInstanceName -eq $null) {
 			$SourceInstanceName = "MSSQLSERVER"
 		}
@@ -642,10 +659,10 @@ The script will show a message that the copy destination has not been supplied a
 		if ($DestinationInstanceName -eq $null) {
 			$DestinationInstanceName = "MSSQLSERVER"
 		}
-        
+
 		$IsSourceLocal = $false
 		$IsDestinationLocal = $false
-        
+
 		# Check if it's local or remote
 		if ($SourceServerName -in ".", "localhost", $env:ServerName, "127.0.0.1") {
 			$IsSourceLocal = $true
@@ -661,18 +678,29 @@ The script will show a message that the copy destination has not been supplied a
 
 		# Check the instance names and the database settings
 		if (($SourceSqlInstance -eq $DestinationSqlInstance) -and (-not $SecondaryDatabaseSuffix)) {
-			Stop-Function -Message "If the destination is same as source please enter a suffix with paramater SecondaryDatabaseSuffix." -Target $SourceSqlInstance 
+			Stop-Function -Message "If the destination is same as source please enter a suffix with paramater SecondaryDatabaseSuffix." -Target $SourceSqlInstance
 			return
+		}
+
+		# Check the connection timeout
+		if ($SourceServer.ConnectionContext.StatementTimeout -ne 0) {		
+			$SourceServer.ConnectionContext.StatementTimeout = 0
+			Write-Message -Message "Connection timeout of $SourceServer is set to 0" -Level Verbose
+		}
+
+		if ($DestinationServer.ConnectionContext.StatementTimeout -ne 0) {
+			$DestinationServer.ConnectionContext.StatementTimeout = 0
+			Write-Message -Message "Connection timeout of $DestinationServer is set to 0" -Level Verbose
 		}
 
 		# Check the backup network path
 		Write-Message -Message "Testing backup network path $BackupNetworkPath" -Level Verbose
 		if ((Test-DbaSqlPath -Path $BackupNetworkPath -SqlInstance $SourceSqlInstance -SqlCredential $SourceCredential) -ne $true) {
-			Stop-Function -Message "Backup network path $BackupNetworkPath is not valid or can't be reached." -Target $SourceSqlInstance 
+			Stop-Function -Message "Backup network path $BackupNetworkPath is not valid or can't be reached." -Target $SourceSqlInstance
 			return
 		}
 		elseif ($BackupNetworkPath -notmatch $RegexUnc) {
-			Stop-Function -Message "Backup network path $BackupNetworkPath has to be in the form of \\server\share." -Target $SourceSqlInstance 
+			Stop-Function -Message "Backup network path $BackupNetworkPath has to be in the form of \\server\share." -Target $SourceSqlInstance
 			return
 		}
 
@@ -695,7 +723,7 @@ The script will show a message that the copy destination has not been supplied a
 					$choiceNo = New-Object System.Management.Automation.Host.ChoiceDescription "&No", "Answer No."
 					$options = [System.Management.Automation.Host.ChoiceDescription[]]($choiceYes, $choiceNo)
 					$result = $host.ui.PromptForChoice($title, $message, $options, 0)
-            
+
 					# Check the result from the confirm
 					switch ($result) {
 						# If yes
@@ -729,9 +757,9 @@ The script will show a message that the copy destination has not been supplied a
 							}
 						}
 						1 {
-							Stop-Function -Message "Copy destination is a mandatory parameter. Please make sure the value is entered." -Target $DestinationSqlInstance 
+							Stop-Function -Message "Copy destination is a mandatory parameter. Please make sure the value is entered." -Target $DestinationSqlInstance
 							return
-						} 
+						}
 					} # switch
 				} # if not force
 				else {
@@ -744,18 +772,18 @@ The script will show a message that the copy destination has not been supplied a
 					catch {
 						Stop-Function -Message "Something went wrong creating the copy destination folder $CopyDestinationFolder. `n$_" -Target $DestinationSqlInstance -InnerErrorRecord $_
 						return
-					} 
+					}
 				} # else not force
 			} # if test path copy destination
 		} # if not copy destination
-		
+
 		Write-Message -Message "Testing copy destination path $CopyDestinationFolder" -Level Verbose
 		if ((Test-DbaSqlPath -Path $CopyDestinationFolder -SqlInstance $DestinationSqlInstance -SqlCredential $DestinationCredential) -ne $true) {
-			Stop-Function -Message "Copy destination folder $CopyDestinationFolder is not valid or can't be reached." -Target $DestinationSqlInstance 
+			Stop-Function -Message "Copy destination folder $CopyDestinationFolder is not valid or can't be reached." -Target $DestinationSqlInstance
 			return
 		}
 		elseif ($CopyDestinationFolder.StartsWith("\\") -and $CopyDestinationFolder -notmatch $RegexUnc) {
-			Stop-Function -Message "Copy destination folder $CopyDestinationFolder has to be in the form of \\server\share." -Target $DestinationSqlInstance 
+			Stop-Function -Message "Copy destination folder $CopyDestinationFolder has to be in the form of \\server\share." -Target $DestinationSqlInstance
 			return
 		}
 
@@ -777,11 +805,13 @@ The script will show a message that the copy destination has not been supplied a
 
 		# Check the database parameter
 		if ($Database) {
-			if ($Database -notin $SourceServer.Databases.Name) {
-				Stop-Function -Message "One or more databases cannot be found on instance on instance $SourceSqlInstance" -Target $SourceSqlInstance -Continue
-			}
+			foreach ($db in $Database) {
+				if ($db -notin $SourceServer.Databases.Name) {
+					Stop-Function -Message "Database $db cannot be found on instance $SourceSqlInstance" -Target $SourceSqlInstance
+				}
 
-			$DatabaseCollection = $SourceServer.Databases | Where-Object { $_.Name -in $Database }
+				$DatabaseCollection = $SourceServer.Databases | Where-Object { $_.Name -in $Database }
+			}
 		}
 		else {
 			Stop-Function -Message "Please supply a database to set up log shipping for" -Target $SourceSqlInstance -Continue
@@ -799,154 +829,165 @@ The script will show a message that the copy destination has not been supplied a
 
 		# Setting defaults
 		if (-not $BackupRetention) {
-			$BackupRetention = 4320 
+			$BackupRetention = 4320
 			Write-Message -Message "Backup retention set to $BackupRetention" -Level Verbose
 		}
 		if (-not $BackupThreshold) {
 			$BackupThreshold = 60
-			Write-Message -Message "Backup Threshold set to $BackupThreshold" -Level Verbose 
+			Write-Message -Message "Backup Threshold set to $BackupThreshold" -Level Verbose
 		}
 		if (-not $CopyRetention) {
 			$CopyRetention = 4320
-			Write-Message -Message "Copy retention set to $CopyRetention" -Level Verbose 
+			Write-Message -Message "Copy retention set to $CopyRetention" -Level Verbose
 		}
 		if (-not $HistoryRetention) {
 			$HistoryRetention = 14420
-			Write-Message -Message "History retention set to $HistoryRetention" -Level Verbose 
+			Write-Message -Message "History retention set to $HistoryRetention" -Level Verbose
 		}
 		if (-not $RestoreAlertThreshold) {
 			$RestoreAlertThreshold = 45
-			Write-Message -Message "Restore alert Threshold set to $RestoreAlertThreshold" -Level Verbose 
+			Write-Message -Message "Restore alert Threshold set to $RestoreAlertThreshold" -Level Verbose
 		}
 		if (-not $RestoreDelay) {
 			$RestoreDelay = 0
-			Write-Message -Message "Restore delay set to $RestoreDelay" -Level Verbose 
+			Write-Message -Message "Restore delay set to $RestoreDelay" -Level Verbose
 		}
 		if (-not $RestoreRetention) {
 			$RestoreRetention = 4320
-			Write-Message -Message "Restore retention set to $RestoreRetention" -Level Verbose 
+			Write-Message -Message "Restore retention set to $RestoreRetention" -Level Verbose
 		}
 		if (-not $RestoreThreshold) {
 			$RestoreThreshold = 0
-			Write-Message -Message "Restore Threshold set to $RestoreThreshold" -Level Verbose 
+			Write-Message -Message "Restore Threshold set to $RestoreThreshold" -Level Verbose
 		}
 		if (-not $PrimaryMonitorServerSecurityMode) {
-			$PrimaryMonitorServerSecurityMode = 1 
-			Write-Message -Message "Primary monitor server security mode set to $PrimaryMonitorServerSecurityMode" -Level Verbose 
+			$PrimaryMonitorServerSecurityMode = 1
+			Write-Message -Message "Primary monitor server security mode set to $PrimaryMonitorServerSecurityMode" -Level Verbose
 		}
 		if (-not $SecondaryMonitorServerSecurityMode) {
-			$SecondaryMonitorServerSecurityMode = 1 
-			Write-Message -Message "Secondary monitor server security mode set to $SecondaryMonitorServerSecurityMode" -Level Verbose 
+			$SecondaryMonitorServerSecurityMode = 1
+			Write-Message -Message "Secondary monitor server security mode set to $SecondaryMonitorServerSecurityMode" -Level Verbose
 		}
 		if (-not $BackupScheduleFrequencyType) {
-			$BackupScheduleFrequencyType = "Daily" 
-			Write-Message -Message "Backup frequency type set to $BackupScheduleFrequencyType" -Level Verbose 
+			$BackupScheduleFrequencyType = "Daily"
+			Write-Message -Message "Backup frequency type set to $BackupScheduleFrequencyType" -Level Verbose
 		}
 		if (-not $BackupScheduleFrequencyInterval) {
-			$BackupScheduleFrequencyInterval = "EveryDay" 
-			Write-Message -Message "Backup frequency interval set to $BackupScheduleFrequencyInterval" -Level Verbose 
+			$BackupScheduleFrequencyInterval = "EveryDay"
+			Write-Message -Message "Backup frequency interval set to $BackupScheduleFrequencyInterval" -Level Verbose
 		}
 		if (-not $BackupScheduleFrequencySubdayType) {
-			$BackupScheduleFrequencySubdayType = "Minutes" 
-			Write-Message -Message "Backup frequency subday type set to $BackupScheduleFrequencySubdayType" -Level Verbose 
+			$BackupScheduleFrequencySubdayType = "Minutes"
+			Write-Message -Message "Backup frequency subday type set to $BackupScheduleFrequencySubdayType" -Level Verbose
 		}
 		if (-not $BackupScheduleFrequencySubdayInterval) {
-			$BackupScheduleFrequencySubdayInterval = 15 
-			Write-Message -Message "Backup frequency subday interval set to $BackupScheduleFrequencySubdayInterval" -Level Verbose 
+			$BackupScheduleFrequencySubdayInterval = 15
+			Write-Message -Message "Backup frequency subday interval set to $BackupScheduleFrequencySubdayInterval" -Level Verbose
 		}
 		if (-not $BackupScheduleFrequencyRelativeInterval) {
-			$BackupScheduleFrequencyRelativeInterval = "Unused" 
-			Write-Message -Message "Backup frequency relative interval set to $BackupScheduleFrequencyRelativeInterval" -Level Verbose 
+			$BackupScheduleFrequencyRelativeInterval = "Unused"
+			Write-Message -Message "Backup frequency relative interval set to $BackupScheduleFrequencyRelativeInterval" -Level Verbose
 		}
 		if (-not $BackupScheduleFrequencyRecurrenceFactor) {
-			$BackupScheduleFrequencyRecurrenceFactor = 0 
-			Write-Message -Message "Backup frequency recurrence factor set to $BackupScheduleFrequencyRecurrenceFactor" -Level Verbose 
+			$BackupScheduleFrequencyRecurrenceFactor = 0
+			Write-Message -Message "Backup frequency recurrence factor set to $BackupScheduleFrequencyRecurrenceFactor" -Level Verbose
 		}
 		if (-not $CopyScheduleFrequencyType) {
-			$CopyScheduleFrequencyType = "Daily" 
-			Write-Message -Message "Copy frequency type set to $CopyScheduleFrequencyType" -Level Verbose 
+			$CopyScheduleFrequencyType = "Daily"
+			Write-Message -Message "Copy frequency type set to $CopyScheduleFrequencyType" -Level Verbose
 		}
 		if (-not $CopyScheduleFrequencyInterval) {
-			$CopyScheduleFrequencyInterval = "EveryDay" 
-			Write-Message -Message "Copy frequency interval set to $CopyScheduleFrequencyInterval" -Level Verbose 
+			$CopyScheduleFrequencyInterval = "EveryDay"
+			Write-Message -Message "Copy frequency interval set to $CopyScheduleFrequencyInterval" -Level Verbose
 		}
 		if (-not $CopyScheduleFrequencySubdayType) {
-			$CopyScheduleFrequencySubdayType = "Minutes" 
-			Write-Message -Message "Copy frequency subday type set to $CopyScheduleFrequencySubdayType" -Level Verbose 
+			$CopyScheduleFrequencySubdayType = "Minutes"
+			Write-Message -Message "Copy frequency subday type set to $CopyScheduleFrequencySubdayType" -Level Verbose
 		}
 		if (-not $CopyScheduleFrequencySubdayInterval) {
-			$CopyScheduleFrequencySubdayInterval = 15 
-			Write-Message -Message "Copy frequency subday interval set to $CopyScheduleFrequencySubdayInterval" -Level Verbose 
+			$CopyScheduleFrequencySubdayInterval = 15
+			Write-Message -Message "Copy frequency subday interval set to $CopyScheduleFrequencySubdayInterval" -Level Verbose
 		}
 		if (-not $CopyScheduleFrequencyRelativeInterval) {
-			$CopyScheduleFrequencyRelativeInterval = "Unused" 
-			Write-Message -Message "Copy frequency relative interval set to $CopyScheduleFrequencyRelativeInterval" -Level Verbose 
+			$CopyScheduleFrequencyRelativeInterval = "Unused"
+			Write-Message -Message "Copy frequency relative interval set to $CopyScheduleFrequencyRelativeInterval" -Level Verbose
 		}
 		if (-not $CopyScheduleFrequencyRecurrenceFactor) {
-			$CopyScheduleFrequencyRecurrenceFactor = 0 
-			Write-Message -Message "Copy frequency recurrence factor set to $CopyScheduleFrequencyRecurrenceFactor" -Level Verbose 
+			$CopyScheduleFrequencyRecurrenceFactor = 0
+			Write-Message -Message "Copy frequency recurrence factor set to $CopyScheduleFrequencyRecurrenceFactor" -Level Verbose
 		}
 		if (-not $RestoreScheduleFrequencyType) {
-			$RestoreScheduleFrequencyType = "Daily" 
-			Write-Message -Message "Restore frequency type set to $RestoreScheduleFrequencyType" -Level Verbose 
+			$RestoreScheduleFrequencyType = "Daily"
+			Write-Message -Message "Restore frequency type set to $RestoreScheduleFrequencyType" -Level Verbose
 		}
 		if (-not $RestoreScheduleFrequencyInterval) {
 			$RestoreScheduleFrequencyInterval = "EveryDay"
-			Write-Message -Message "Restore frequency interval set to $RestoreScheduleFrequencyInterval" -Level Verbose 
+			Write-Message -Message "Restore frequency interval set to $RestoreScheduleFrequencyInterval" -Level Verbose
 		}
 		if (-not $RestoreScheduleFrequencySubdayType) {
-			$RestoreScheduleFrequencySubdayType = "Minutes" 
-			Write-Message -Message "Restore frequency subday type set to $RestoreScheduleFrequencySubdayType" -Level Verbose 
+			$RestoreScheduleFrequencySubdayType = "Minutes"
+			Write-Message -Message "Restore frequency subday type set to $RestoreScheduleFrequencySubdayType" -Level Verbose
 		}
 		if (-not $RestoreScheduleFrequencySubdayInterval) {
-			$RestoreScheduleFrequencySubdayInterval = 15 
-			Write-Message -Message "Restore frequency subday interval set to $RestoreScheduleFrequencySubdayInterval" -Level Verbose 
+			$RestoreScheduleFrequencySubdayInterval = 15
+			Write-Message -Message "Restore frequency subday interval set to $RestoreScheduleFrequencySubdayInterval" -Level Verbose
 		}
 		if (-not $RestoreScheduleFrequencyRelativeInterval) {
-			$RestoreScheduleFrequencyRelativeInterval = "Unused" 
-			Write-Message -Message "Restore frequency relative interval set to $RestoreScheduleFrequencyRelativeInterval" -Level Verbose 
+			$RestoreScheduleFrequencyRelativeInterval = "Unused"
+			Write-Message -Message "Restore frequency relative interval set to $RestoreScheduleFrequencyRelativeInterval" -Level Verbose
 		}
 		if (-not $RestoreScheduleFrequencyRecurrenceFactor) {
-			$RestoreScheduleFrequencyRecurrenceFactor = 0 
-			Write-Message -Message "Restore frequency recurrence factor set to $RestoreScheduleFrequencyRecurrenceFactor" -Level Verbose 
+			$RestoreScheduleFrequencyRecurrenceFactor = 0
+			Write-Message -Message "Restore frequency recurrence factor set to $RestoreScheduleFrequencyRecurrenceFactor" -Level Verbose
 		}
 		if (-not $SecondaryDatabaseSuffix -and ($SourceServer.Name -eq $DestinationServer.Name) -and ($SourceServer.InstanceName -eq $DestinationServer.InstanceName)) {
 			if ($Force) {
 				$SecondaryDatabaseSuffix = "LS"
 			}
 			else {
-				Stop-Function -Message "Destination database is the same as source database.`nPlease check the secondary server, databse suffix or use -Force to set the secondary databse using a suffix." -Target $SourceSqlInstance 
+				Stop-Function -Message "Destination database is the same as source database.`nPlease check the secondary server, databse suffix or use -Force to set the secondary databse using a suffix." -Target $SourceSqlInstance
 				return
 			}
 		}
 
+		# Checking for contradicting variables
+		if ($NoInitialization -and ($GenerateFullBackup -or $UseExistingFullBackup)) {
+			Stop-Function -Message "Cannot use -NoInitialization with -GenerateFullBackup or -UseExistingFullBackup" -Target $DestinationSqlInstance
+			return
+		}
+
+		if ($UseBackupFolder -and ($GenerateFullBackup -or $NoInitialization -or $UseExistingFullBackup)) {
+			Stop-Function -Message "Cannot use -UseBackupFolder with -GenerateFullBackup, -NoInitialization or -UseExistingFullBackup" -Target $DestinationSqlInstance
+			return
+		}
+
 		# Check the subday interval
 		if (($BackupScheduleFrequencySubdayType -in 2, "Seconds", 4, "Minutes") -and (-not ($BackupScheduleFrequencySubdayInterval -ge 1 -or $BackupScheduleFrequencySubdayInterval -le 59))) {
-			Stop-Function -Message "Backup subday interval $BackupScheduleFrequencySubdayInterval must be between 1 and 59 when subday type is 2, 'Seconds', 4 or 'Minutes'" -Target $SourceSqlInstance 
+			Stop-Function -Message "Backup subday interval $BackupScheduleFrequencySubdayInterval must be between 1 and 59 when subday type is 2, 'Seconds', 4 or 'Minutes'" -Target $SourceSqlInstance
 			return
 		}
 		elseif (($BackupScheduleFrequencySubdayType -in 8, "Hours") -and (-not ($BackupScheduleFrequencySubdayInterval -ge 1 -and $BackupScheduleFrequencySubdayInterval -le 23))) {
-			Stop-Function -Message "Backup Subday interval $BackupScheduleFrequencySubdayInterval must be between 1 and 23 when subday type is 8 or 'Hours" -Target $SourceSqlInstance 
+			Stop-Function -Message "Backup Subday interval $BackupScheduleFrequencySubdayInterval must be between 1 and 23 when subday type is 8 or 'Hours" -Target $SourceSqlInstance
 			return
 		}
 
 		# Check the subday interval
 		if (($CopyScheduleFrequencySubdayType -in 2, "Seconds", 4, "Minutes") -and (-not ($CopyScheduleFrequencySubdayInterval -ge 1 -or $CopyScheduleFrequencySubdayInterval -le 59))) {
-			Stop-Function -Message "Copy subday interval $CopyScheduleFrequencySubdayInterval must be between 1 and 59 when subday type is 2, 'Seconds', 4 or 'Minutes'" -Target $DestinationSqlInstance 
+			Stop-Function -Message "Copy subday interval $CopyScheduleFrequencySubdayInterval must be between 1 and 59 when subday type is 2, 'Seconds', 4 or 'Minutes'" -Target $DestinationSqlInstance
 			return
 		}
 		elseif (($CopyScheduleFrequencySubdayType -in 8, "Hours") -and (-not ($CopyScheduleFrequencySubdayInterval -ge 1 -and $CopyScheduleFrequencySubdayInterval -le 23))) {
-			Stop-Function -Message "Copy subday interval $CopyScheduleFrequencySubdayInterval must be between 1 and 23 when subday type is 8 or 'Hours" -Target $DestinationSqlInstance 
+			Stop-Function -Message "Copy subday interval $CopyScheduleFrequencySubdayInterval must be between 1 and 23 when subday type is 8 or 'Hours'" -Target $DestinationSqlInstance
 			return
 		}
 
 		# Check the subday interval
 		if (($RestoreScheduleFrequencySubdayType -in 2, "Seconds", 4, "Minutes") -and (-not ($RestoreScheduleFrequencySubdayInterval -ge 1 -or $RestoreScheduleFrequencySubdayInterval -le 59))) {
-			Stop-Function -Message "Restore subday interval $RestoreScheduleFrequencySubdayInterval must be between 1 and 59 when subday type is 2, 'Seconds', 4 or 'Minutes'" -Target $DestinationSqlInstance 
+			Stop-Function -Message "Restore subday interval $RestoreScheduleFrequencySubdayInterval must be between 1 and 59 when subday type is 2, 'Seconds', 4 or 'Minutes'" -Target $DestinationSqlInstance
 			return
 		}
 		elseif (($RestoreScheduleFrequencySubdayType -in 8, "Hours") -and (-not ($RestoreScheduleFrequencySubdayInterval -ge 1 -and $RestoreScheduleFrequencySubdayInterval -le 23))) {
-			Stop-Function -Message "Restore subday interval $RestoreScheduleFrequencySubdayInterval must be between 1 and 23 when subday type is 8 or 'Hours" -Target $DestinationSqlInstance 
+			Stop-Function -Message "Restore subday interval $RestoreScheduleFrequencySubdayInterval must be between 1 and 23 when subday type is 8 or 'Hours" -Target $DestinationSqlInstance
 			return
 		}
 
@@ -957,9 +998,9 @@ The script will show a message that the copy destination has not been supplied a
 		}
 		else {
 			if ($BackupScheduleStartDate -notmatch $RegexDate) {
-				Stop-Function -Message "Backup start date $BackupScheduleStartDate needs to be a valid date with format yyyyMMdd" -Target $SourceSqlInstance 
+				Stop-Function -Message "Backup start date $BackupScheduleStartDate needs to be a valid date with format yyyyMMdd" -Target $SourceSqlInstance
 				return
-			}  
+			}
 		}
 
 		# Check the back start time
@@ -968,7 +1009,7 @@ The script will show a message that the copy destination has not been supplied a
 			Write-Message -Message "Backup start time set to $BackupScheduleStartTime" -Level Verbose
 		}
 		elseif ($BackupScheduleStartTime -notmatch $RegexTime) {
-			Stop-Function -Message  "Backup start time $BackupScheduleStartTime needs to match between '000000' and '235959'" -Target $SourceSqlInstance 
+			Stop-Function -Message  "Backup start time $BackupScheduleStartTime needs to match between '000000' and '235959'" -Target $SourceSqlInstance
 			return
 		}
 
@@ -978,7 +1019,7 @@ The script will show a message that the copy destination has not been supplied a
 			Write-Message -Message "Backup end time set to $BackupScheduleEndTime" -Level Verbose
 		}
 		elseif ($BackupScheduleStartTime -notmatch $RegexTime) {
-			Stop-Function -Message  "Backup end time $BackupScheduleStartTime needs to match between '000000' and '235959'" -Target $SourceSqlInstance 
+			Stop-Function -Message  "Backup end time $BackupScheduleStartTime needs to match between '000000' and '235959'" -Target $SourceSqlInstance
 			return
 		}
 
@@ -987,7 +1028,7 @@ The script will show a message that the copy destination has not been supplied a
 			$BackupScheduleEndDate = '99991231'
 		}
 		elseif ($BackupScheduleEndDate -notmatch $RegexDate) {
-			Stop-Function -Message "Backup end date $BackupScheduleEndDate needs to be a valid date with format yyyyMMdd" -Target $SourceSqlInstance 
+			Stop-Function -Message "Backup end date $BackupScheduleEndDate needs to be a valid date with format yyyyMMdd" -Target $SourceSqlInstance
 			return
 		}
 
@@ -998,9 +1039,9 @@ The script will show a message that the copy destination has not been supplied a
 		}
 		else {
 			if ($CopyScheduleStartDate -notmatch $RegexDate) {
-				Stop-Function -Message "Copy start date $CopyScheduleStartDate needs to be a valid date with format yyyyMMdd" -Target $SourceSqlInstance 
+				Stop-Function -Message "Copy start date $CopyScheduleStartDate needs to be a valid date with format yyyyMMdd" -Target $SourceSqlInstance
 				return
-			}  
+			}
 		}
 
 		# Check the copy end date
@@ -1008,7 +1049,7 @@ The script will show a message that the copy destination has not been supplied a
 			$CopyScheduleEndDate = '99991231'
 		}
 		elseif ($CopyScheduleEndDate -notmatch $RegexDate) {
-			Stop-Function -Message "Copy end date $CopyScheduleEndDate needs to be a valid date with format yyyyMMdd" -Target $SourceSqlInstance 
+			Stop-Function -Message "Copy end date $CopyScheduleEndDate needs to be a valid date with format yyyyMMdd" -Target $SourceSqlInstance
 			return
 		}
 
@@ -1018,7 +1059,7 @@ The script will show a message that the copy destination has not been supplied a
 			Write-Message -Message "Copy start time set to $CopyScheduleStartTime" -Level Verbose
 		}
 		elseif ($CopyScheduleStartTime -notmatch $RegexTime) {
-			Stop-Function -Message  "Copy start time $CopyScheduleStartTime needs to match between '000000' and '235959'" -Target $SourceSqlInstance 
+			Stop-Function -Message  "Copy start time $CopyScheduleStartTime needs to match between '000000' and '235959'" -Target $SourceSqlInstance
 			return
 		}
 
@@ -1028,7 +1069,7 @@ The script will show a message that the copy destination has not been supplied a
 			Write-Message -Message "Copy end time set to $CopyScheduleEndTime" -Level Verbose
 		}
 		elseif ($CopyScheduleEndTime -notmatch $RegexTime) {
-			Stop-Function -Message  "Copy end time $CopyScheduleEndTime needs to match between '000000' and '235959'" -Target $SourceSqlInstance 
+			Stop-Function -Message  "Copy end time $CopyScheduleEndTime needs to match between '000000' and '235959'" -Target $SourceSqlInstance
 			return
 		}
 
@@ -1039,9 +1080,9 @@ The script will show a message that the copy destination has not been supplied a
 		}
 		else {
 			if ($RestoreScheduleStartDate -notmatch $RegexDate) {
-				Stop-Function -Message "Restore start date $RestoreScheduleStartDate needs to be a valid date with format yyyyMMdd" -Target $SourceSqlInstance 
+				Stop-Function -Message "Restore start date $RestoreScheduleStartDate needs to be a valid date with format yyyyMMdd" -Target $SourceSqlInstance
 				return
-			}  
+			}
 		}
 
 		# Check the restore end date
@@ -1049,7 +1090,7 @@ The script will show a message that the copy destination has not been supplied a
 			$RestoreScheduleEndDate = '99991231'
 		}
 		elseif ($RestoreScheduleEndDate -notmatch $RegexDate) {
-			Stop-Function -Message "Restore end date $RestoreScheduleEndDate needs to be a valid date with format yyyyMMdd" -Target $SourceSqlInstance 
+			Stop-Function -Message "Restore end date $RestoreScheduleEndDate needs to be a valid date with format yyyyMMdd" -Target $SourceSqlInstance
 			return
 		}
 
@@ -1059,7 +1100,7 @@ The script will show a message that the copy destination has not been supplied a
 			Write-Message -Message "Restore start time set to $RestoreScheduleStartTime" -Level Verbose
 		}
 		elseif ($RestoreScheduleStartTime -notmatch $RegexTime) {
-			Stop-Function -Message  "Restore start time $RestoreScheduleStartTime needs to match between '000000' and '235959'" -Target $SourceSqlInstance 
+			Stop-Function -Message  "Restore start time $RestoreScheduleStartTime needs to match between '000000' and '235959'" -Target $SourceSqlInstance
 			return
 		}
 
@@ -1069,24 +1110,58 @@ The script will show a message that the copy destination has not been supplied a
 			Write-Message -Message "Restore end time set to $RestoreScheduleEndTime" -Level Verbose
 		}
 		elseif ($RestoreScheduleEndTime -notmatch $RegexTime) {
-			Stop-Function -Message  "Restore end time $RestoreScheduleEndTime needs to match between '000000' and '235959'" -Target $SourceSqlInstance 
+			Stop-Function -Message  "Restore end time $RestoreScheduleEndTime needs to match between '000000' and '235959'" -Target $SourceSqlInstance
 			return
 		}
 
-	}
+		# Check if standby is being used
+		if ($Standby) {
+			
+			# Check the stand-by directory
+			if ($StandbyDirectory) {
+				# Check if the path is reachable for the destination server
+				if ((Test-DbaSqlPath -Path $StandbyDirectory -SqlInstance $DestinationSqlInstance -SqlCredential $DestinationCredential) -ne $true) {
+					Stop-Function -Message "The directory $StandbyDirectory cannot be reached by the destination instance. Please check the permission and credentials." -Target $DestinationSqlInstance
+					return
+				}
+			}
+			elseif (-not $StandbyDirectory -and $Force) {
+				$StandbyDirectory = $DestinationSqlInstance.BackupDirectory
+				Write-Message -Message "Stand-by directory was not set. Setting it to $StandbyDirectory" -Level Verbose
+			}
+			else {
+				Stop-Function -Message "Please set the parameter -StandbyDirectory when using -Standby" -Target $SourceSqlInstance
+				return
+			}
+		}
+	} # begin
 
 	process {
 
 		if (Test-FunctionInterrupt) { return }
-		
+
 		# Loop through each of the databases
 		foreach ($db in $DatabaseCollection) {
-			
+
 			# Check the status of the database
-			if($db.RecoveryModel -ne 'Full'){
+			if ($db.RecoveryModel -ne 'Full') {
 				Stop-Function -Message  "Database $db is not in FULL recovery mode" -Target $SourceSqlInstance -Continue
 			}
- 				
+
+			# Set the database suffix
+			if ($SecondaryDatabaseSuffix) {
+				$SecondaryDatabase = "$($($db.Name))_$($SecondaryDatabaseSuffix)"
+			}
+			else {
+				$SecondaryDatabase = $($db.Name)
+			}
+
+			# Check is the database is already initialized an check if the database exists on the secondary instance
+			if ($NoInitialization -and ($DestinationServer.Databases.Name -notcontains $SecondaryDatabase)) {
+				Stop-Function -Message "Database $SecondaryDatabase needs to be initialized before log shipping setting can continue." -Target $SourceSqlInstance -Continue
+			}
+
+			# Check the local backup path
 			if ($BackupLocalPath) {
 				if ($BackupLocalPath.EndsWith("\")) {
 					$DatabaseBackupLocalPath = "$BackupLocalPath$($db.Name)"
@@ -1119,8 +1194,8 @@ The script will show a message that the copy destination has not been supplied a
 
 			# Checking if the database network path exists
 			Write-Message -Message "Testing database backup network path $DatabaseBackupNetworkPath" -Level Verbose
-			if ((Test-DbaSqlPath -Path $DatabaseBackupNetworkPath -SqlInstance $SourceSqlInstance -SqlCredential $SourceCredential) -ne $true) {	
-				# To to create the backup directory for the database 
+			if ((Test-DbaSqlPath -Path $DatabaseBackupNetworkPath -SqlInstance $SourceSqlInstance -SqlCredential $SourceCredential) -ne $true) {
+				# To to create the backup directory for the database
 				try {
 					Write-Message -Message "Database backup network path $DatabaseBackupNetworkPath not found. Trying to create it.." -Level Verbose
 
@@ -1131,7 +1206,7 @@ The script will show a message that the copy destination has not been supplied a
 				}
 				catch {
 					Stop-Function -Message "Something went wrong creating the directory. `n$($_.Exception.Message)" -InnerErrorRecord $_ -Target $SourceSqlInstance -Continue
-				}   
+				}
 			}
 
 			# Check if the backup job name is set
@@ -1152,61 +1227,56 @@ The script will show a message that the copy destination has not been supplied a
 			}
 			Write-Message -Message "Backup job schedule name set to $DatabaseBackupSchedule" -Level Verbose
 
-			# Set the database suffix
-			if ($SecondaryDatabaseSuffix) {
-				$SecondaryDatabase = "$($($db.Name))_$($SecondaryDatabaseSuffix)"
-			}
-			else {
-				$SecondaryDatabase = $($db.Name)
-			}
-            
 			# Check if secondary database is present on secondary instance
-			if (-not $Force -and ($DestinationServer.Databases[$SecondaryDatabase].Status -ne 'Restoring') -and ($DestinationServer.Databases.Name -contains $SecondaryDatabase)) {
+			if (-not $Force -and -not $NoInitialization -and ($DestinationServer.Databases[$SecondaryDatabase].Status -ne 'Restoring') -and ($DestinationServer.Databases.Name -contains $SecondaryDatabase)) {
 				Stop-Function -Message "Secondary database already exists on instance $DestinationSqlInstance." -InnerErrorRecord $_ -Target $DestinationSqlInstance -Continue
 			}
 
-			# Check if the secondary database exists on the secondary instance
-			if ($DestiationServer.Databases.Name -notcontains $SecondaryDatabase) {
-				# Check if force is being used and no option to generate the full backup is set
-				if ($Force -and -not ($GenerateFullBackup -or $UseExistingFullBackup)) {
-					# Set the option to generate a full backup
-					Write-Message -Message "Set option to initialize secondary database with full backup." -Level Verbose
-					$GenerateFullBackup = $true
-				}
-				elseif (-not $Force -and -not $GenerateFullBackup -and -not $UseExistingFullBackup) {
-					# Set up the confirm part
-					$message = "The database $SecondaryDatabase does not exist on instance $DestinationSqlInstance. `nDo you want to initialize it by generating a full backup?"
-					$choiceYes = New-Object System.Management.Automation.Host.ChoiceDescription "&Yes", "Answer Yes."
-					$choiceNo = New-Object System.Management.Automation.Host.ChoiceDescription "&No", "Answer No."
-					$options = [System.Management.Automation.Host.ChoiceDescription[]]($choiceYes, $choiceNo)
-					$result = $host.ui.PromptForChoice($title, $message, $options, 0)
-				
-					# Check the result from the confirm
-					switch ($result) {
-						# If yes
-						0 {
-							# Set the option to generate a full backup
-							Write-Message -Message "Set option to initialize secondary database with full backup." -Level Verbose
-							$GenerateFullBackup = $true
-						}
-						1 {
-							Stop-Function -Message "The database is not initialized on the secondary instance. `nPlease initialize the database on the secondary instance, use -GenerateFullbackup or use -Force." -Target $DestinationSqlInstance 
-							return
-						} 
-					} # switch
+			# Check if the secondary database needs tobe initialized
+			if (-not $NoInitialization) {
+				# Check if the secondary database exists on the secondary instance
+				if ($DestiationServer.Databases.Name -notcontains $SecondaryDatabase) {
+					# Check if force is being used and no option to generate the full backup is set
+					if ($Force -and -not ($GenerateFullBackup -or $UseExistingFullBackup)) {
+						# Set the option to generate a full backup
+						Write-Message -Message "Set option to initialize secondary database with full backup." -Level Verbose
+						$GenerateFullBackup = $true
+					}
+					elseif (-not $Force -and -not $GenerateFullBackup -and -not $UseExistingFullBackup -and -not $UseBackupFolder) {
+						# Set up the confirm part
+						$message = "The database $SecondaryDatabase does not exist on instance $DestinationSqlInstance. `nDo you want to initialize it by generating a full backup?"
+						$choiceYes = New-Object System.Management.Automation.Host.ChoiceDescription "&Yes", "Answer Yes."
+						$choiceNo = New-Object System.Management.Automation.Host.ChoiceDescription "&No", "Answer No."
+						$options = [System.Management.Automation.Host.ChoiceDescription[]]($choiceYes, $choiceNo)
+						$result = $host.ui.PromptForChoice($title, $message, $options, 0)
+
+						# Check the result from the confirm
+						switch ($result) {
+							# If yes
+							0 {
+								# Set the option to generate a full backup
+								Write-Message -Message "Set option to initialize secondary database with full backup." -Level Verbose
+								$GenerateFullBackup = $true
+							}
+							1 {
+								Stop-Function -Message "The database is not initialized on the secondary instance. `nPlease initialize the database on the secondary instance, use -GenerateFullbackup or use -Force." -Target $DestinationSqlInstance
+								return
+							}
+						} # switch
+					}
 				}
 			}
-				
+
 
 			# Check the parameters for initialization of the secondary database
-			if ($GenerateFullBackup -or $UseExistingFullBackup) {
+			if (-not $NoInitialization -and ($GenerateFullBackup -or $UseExistingFullBackup -or $UseBackupFolder)) {
 				# Check if the restore data and log folder are set
 				if (-not $RestoreDataFolder -or -not $RestoreLogFolder) {
 					Write-Message -Message "Restore data folder or restore log folder are not set. Using server defaults" -Level Verbose
 
 					# Get the default data folder
 					if (-not $RestoreDataFolder) {
-						$DatabaseRestoreDataFolder = $DestinationServer.DefaultFile  
+						$DatabaseRestoreDataFolder = $DestinationServer.DefaultFile
 					}
 					else {
 						# Set the restore data folder
@@ -1217,7 +1287,7 @@ The script will show a message that the copy destination has not been supplied a
 							$DatabaseRestoreDataFolder = "$RestoreDataFolder\$($db.Name)"
 						}
 					}
-                    
+
 					Write-Message -Message "Restore data folder set to $DatabaseRestoreDataFolder" -Level Verbose
 
 					# Get the default log folder
@@ -1229,7 +1299,7 @@ The script will show a message that the copy destination has not been supplied a
 
 					# Check if the restore data folder exists
 					Write-Message -Message "Testing database restore data path $DatabaseRestoreDataFolder" -Level Verbose
-					if ((Test-DbaSqlPath  -Path $DatabaseRestoreDataFolder -SqlInstance $DestinationSqlInstance -SqlCredential $DestinationCredential) -ne $true) {	
+					if ((Test-DbaSqlPath  -Path $DatabaseRestoreDataFolder -SqlInstance $DestinationSqlInstance -SqlCredential $DestinationCredential) -ne $true) {
 						if ($PSCmdlet.ShouldProcess($DestinationServerName, "Creating database restore data folder $DatabaseRestoreDataFolder on $DestinationServerName")) {
 							# Try creating the data folder
 							try {
@@ -1251,7 +1321,7 @@ The script will show a message that the copy destination has not been supplied a
 							# Try creating the log folder
 							try {
 								Write-Message -Message "Restore log folder $DatabaseRestoreLogFolder not found. Trying to create it.." -Level Verbose
-									
+
 								Invoke-Command2 -Credential $DestinationCredential -ScriptBlock {
 									Write-Message -Message "Restore log folder $DatabaseRestoreLogFolder not found. Trying to create it.." -Level Verbose
 									New-Item -Path $DatabaseRestoreLogFolder -ItemType Directory -Credential $DestinationCredential -Force:$Force | Out-Null
@@ -1262,18 +1332,23 @@ The script will show a message that the copy destination has not been supplied a
 							}
 						}
 					}
-				} 
-				else {
-                    
 				}
 
 				# Chech if the full backup patk can be reached
 				if ($FullBackupPath) {
 					Write-Message -Message "Testing full backup path $FullBackupPath" -Level Verbose
 					if ((Test-DbaSqlPath -Path $FullBackupPath -SqlInstance $DestinationSqlInstance -SqlCredential $DestinationCredential) -ne $true) {
-						Stop-Function -Message ("The path to the full backup could not be reached. Check the path and/or the crdential. `n$($_.Exception.Message)") -InnerErrorRecord $_ -Target $SourceSqlInstance -Continue
+						Stop-Function -Message ("The path to the full backup could not be reached. Check the path and/or the crdential. `n$($_.Exception.Message)") -InnerErrorRecord $_ -Target $DestinationSqlInstance -Continue
 					}
-				} 
+				}
+				elseif ($UseBackupFolder.Length -ge 1) {
+					Write-Message -Message "Testing backup folder $UseBackupFolder" -Level Verbose
+					if ((Test-DbaSqlPath -Path $UseBackupFolder -SqlInstance $DestinationSqlInstance -SqlCredential $DestinationCredential) -ne $true) {
+						Stop-Function -Message ("The path to the backup folder could not be reached. Check the path and/or the crdential. `n$($_.Exception.Message)") -InnerErrorRecord $_ -Target $DestinationSqlInstance -Continue
+					}
+
+					$BackupPath = $UseBackupFolder
+				}
 				elseif ($UseExistingFullBackup) {
 					Write-Message -Message "No path to the full backup is set. Trying to retrieve the last full backup for $db from $SourceSqlInstance" -Level Verbose
 
@@ -1285,21 +1360,22 @@ The script will show a message that the copy destination has not been supplied a
 						# Test the path to the backup
 						Write-Message -Message "Testing last backup path $(($LastBackup[-1]).Path[-1])" -Level Verbose
 						if ((Test-DbaSqlPath -Path ($LastBackup[-1]).Path[-1] -SqlInstance $SourceSqlInstance -SqlCredential $SourceCredential) -ne $true) {
-							Stop-Function -Message "The full backup could not be found on $($LastBackup.Path). Check path and/or credentials. `n$($_.Exception.Message)" -InnerErrorRecord $_ -Target $SourceSqlInstance -Continue
+							Stop-Function -Message "The full backup could not be found on $($LastBackup.Path). Check path and/or credentials. `n$($_.Exception.Message)" -InnerErrorRecord $_ -Target $DestinationSqlInstance -Continue
 						}
 						# Check if the source for the last full backup is remote and the backup is on a shared location
 						elseif (($LastBackup.Computername -ne $SourceServerName) -and (($LastBackup[-1]).Path[-1].StartsWith('\\') -eq $false)) {
-							Stop-Function -Message "The last full backup is not located on shared location. `n$($_.Exception.Message)" -InnerErrorRecord $_ -Target $SourceSqlInstance -Continue
+							Stop-Function -Message "The last full backup is not located on shared location. `n$($_.Exception.Message)" -InnerErrorRecord $_ -Target $DestinationSqlInstance -Continue
 						}
 						else {
-							$FullBackupPath = $LastBackup.Path  
-							Write-Message -Message "Full backup found for $db. Path $FullBackupPath" -Level Verbose    
+							#$FullBackupPath = $LastBackup.Path
+							$BackupPath = $LastBackup.Path
+							Write-Message -Message "Full backup found for $db. Path $BackupPath" -Level Verbose
 						}
 					}
 					else {
-						Write-Message -Message "No Full backup found for $db." -Level Output  
+						Write-Message -Message "No Full backup found for $db." -Level Output
 					}
-				}  
+				}
 			}
 
 			# Set the copy destination folder to include the database name
@@ -1316,7 +1392,7 @@ The script will show a message that the copy destination has not been supplied a
 				$DatabaseCopyJob = "$CopyJob_$SourceServerName_$($db.Name)"
 			}
 			else {
-				$DatabaseCopyJob = "LSCopy_$SourceServerName_$($db.Name)"                    
+				$DatabaseCopyJob = "LSCopy_$SourceServerName_$($db.Name)"
 			}
 			Write-Message -Message "Copy job name set to $DatabaseCopyJob" -Level Verbose
 
@@ -1326,7 +1402,7 @@ The script will show a message that the copy destination has not been supplied a
 			}
 			else {
 				$DatabaseCopySchedule = "LSCopySchedule_$($db.Name)"
-				Write-Message -Message "Copy job schedule name set to $DatabaseCopySchedule" -Level Verbose                    
+				Write-Message -Message "Copy job schedule name set to $DatabaseCopySchedule" -Level Verbose
 			}
 
 			# Check if the copy destination folder exists
@@ -1364,11 +1440,11 @@ The script will show a message that the copy destination has not been supplied a
 			Write-Message -Message "Restore job schedule name set to $DatabaseRestoreSchedule" -Level Verbose
 
 			# If the database needs to be backed up first
-			if ($PSCmdlet.ShouldProcess($SourceSqlInstance, "Backing up database $db")) {
-				if ($GenerateFullBackup) {
+			if ($GenerateFullBackup) {
+				if ($PSCmdlet.ShouldProcess($SourceSqlInstance, "Backing up database $db")) {
 					Write-Message -Message "Generating full backup." -Level Output
 					Write-Message -Message "Backing up database $db to $DatabaseBackupNetworkPath" -Level Output
-                    
+
 					$Timestamp = Get-Date -format "yyyyMMddHHmmss"
 
 					$LastBackup = Backup-DbaDatabase -SqlInstance $SourceSqlInstance `
@@ -1376,17 +1452,18 @@ The script will show a message that the copy destination has not been supplied a
 						-BackupDirectory $DatabaseBackupNetworkPath `
 						-BackupFileName "FullBackup_$($db.Name)_PreLogShipping_$Timestamp.bak" `
 						-Databases $($db.Name) `
-						-Type Full 
+						-Type Full
 
 					Write-Message -Message "Backup completed." -Level Output
 
 					# Get the last full backup path
-					$FullBackupPath = $LastBackup.BackupPath  
+					#$FullBackupPath = $LastBackup.BackupPath
+					$BackupPath = $LastBackup.BackupPath
 
-					Write-Message -Message "Backup is located at $FullBackupPath" -Level Verbose
+					Write-Message -Message "Backup is located at $BackupPath" -Level Verbose
 				}
 			}
-            
+
 			# Check of the MonitorServerSecurityMode value is of type string and set the integer value
 			if ($PrimaryMonitorServerSecurityMode -notin 0, 1) {
 				$PrimaryMonitorServerSecurityMode = switch ($PrimaryMonitorServerSecurityMode) {
@@ -1439,116 +1516,72 @@ The script will show a message that the copy destination has not been supplied a
 
 			# Restore the full backup
 			if ($PSCmdlet.ShouldProcess($DestinationSqlInstance, "Restoring database $db to $SecondaryDatabase on $DestinationSqlInstance")) {
-				if ($GenerateFullBackup -or $UseExistingFullBackup) {
-					try {   
+				if ($GenerateFullBackup -or $UseExistingFullBackup -or $UseBackupFolder) {
+					try {
 						Write-Message -Message "Start database restore" -Level Output
 						if ($NoRecovery -or (-not $Standby)) {
 							if ($Force) {
 								Restore-DbaDatabase -SqlServer $DestinationSqlInstance `
 									-SqlCredential $DestinationSqlCredential `
-									-Path $FullBackupPath `
+									-Path $BackupPath `
 									-DestinationFilePrefix $SecondaryDatabaseSuffix `
 									-DestinationDataDirectory $DatabaseRestoreDataFolder `
 									-DestinationLogDirectory $DatabaseRestoreLogFolder `
 									-DatabaseName $SecondaryDatabase `
+									-DirectoryRecurse `
 									-NoRecovery `
 									-WithReplace | Out-Null
 							}
 							else {
 								Restore-DbaDatabase -SqlServer $DestinationSqlInstance `
 									-SqlCredential $DestinationSqlCredential `
-									-Path $FullBackupPath `
+									-Path $BackupPath `
 									-DestinationFilePrefix $SecondaryDatabaseSuffix `
 									-DestinationDataDirectory $DatabaseRestoreDataFolder `
 									-DestinationLogDirectory $DatabaseRestoreLogFolder `
 									-DatabaseName $SecondaryDatabase `
+									-DirectoryRecurse `
 									-NoRecovery | Out-Null
 							}
 						}
-                        
+
 						# If the database needs to be in standby
 						if ($Standby) {
 							# Setup the path to the standby file
-							$StandbyFile = "$DatabaseCopyDestinationFolder\$SecondaryDatabase_RollbackUndo.bak"
+							$StandbyDirectory = "$DatabaseCopyDestinationFolder"
 
-							if ($DestinationSqlCredential -ne $null) {
-								Restore-SqlDatabase -ServerInstance $DestinationSqlInstance `
+							# Check if credentials need to be used
+							if ($DestinationSqlCredential) {
+								Restore-DbaDatabase -ServerInstance $DestinationSqlInstance `
 									-SqlCredential $DestinationSqlCredential `
-									-Database $SecondaryDatabase `
-									-BackupFile $FullBackupPath `
-									-ReplaceDatabase `
-									-StandbyFile $StandbyFile 
+									-Path $BackupPath `
+									-DestinationFilePrefix $SecondaryDatabaseSuffix `
+									-DestinationDataDirectory $DatabaseRestoreDataFolder `
+									-DestinationLogDirectory $DatabaseRestoreLogFolder `
+									-DatabaseName $SecondaryDatabase `
+									-DirectoryRecurse `
+									-StandbyDirectory $StandbyDirectory
 							}
 							else {
-								<# 
-                                    As soon as the Restore-SqlDatabase is able to restore to standby the code below needs to 
-                                    be replaced with the supporting function from dbtools
-                                    #>
-                                
-								# Create the backup device
-								$BackupDeviceItem = New-Object Microsoft.SqlServer.Management.Smo.BackupDeviceItem $FullBackupPath, 'File'
-
-								# Create the restore object
-								$Restore = New-Object 'Microsoft.SqlServer.Management.Smo.Restore'
-
-								# Set the properties of the restore object
-								$Restore.Database = $SecondaryDatabase
-								$Restore.Devices.Add($BackupDeviceItem)
-								$Restore.StandbyFile = $StandbyFile
-
-								# If force is needed replace the database
-								if ($Force) {
-									$Restore.ReplaceDatabase = 1
-								}
-
-								# Setup the physical file name
-								$PhysicalFileName = $SecondaryDatabase
-
-								# Number to use in case of multiple data files
-								$DataFileNumber = 0
-
-								# Loop through the files
-								foreach ($File in $Restore.ReadFileList($DestinationSqlInstance)) {
-									# Create the relocate object to place the files in somewhere else
-									$RelocateFile = New-Object 'Microsoft.SqlServer.Management.Smo.RelocateFile'
-									$RelocateFile.LogicalFileName = $File.LogicalName
-
-									# Use the number in the physical file name if there are multiple data files
-									if ($DataFileNumber -gt 1) {
-										$PhysicalFileName += "_$DataFileNumber.ndf"
-									}
-									else {
-										$PhysicalFileName += ".mdf"
-									}
-                                    
-									# Check the type of the file
-									if ($File.Type -eq 'D') {
-
-										$RelocateFile.PhysicalFileName = "$DatabaseRestoreDataFolder\$PhysicalFileName"
-
-										$DataFileNumber ++;
-									}
-									else {
-										$RelocateFile.PhysicalFileName = "$DatabaseRestoreLogFolder\$SecondaryDatabase.ldf"
-									}
-
-									# Add the relocate objects to the restore
-									$Restore.RelocateFiles.Add($RelocateFile) | Out-Null
-								}    
-								# Execute the restore
-								$Restore.SqlRestore($DestinationSqlInstance)
-                                
+								Restore-DbaDatabase -ServerInstance $DestinationSqlInstance `
+									-Path $BackupPath `
+									-DestinationFilePrefix $SecondaryDatabaseSuffix `
+									-DestinationDataDirectory $DatabaseRestoreDataFolder `
+									-DestinationLogDirectory $DatabaseRestoreLogFolder `
+									-DatabaseName $SecondaryDatabase `
+									-DirectoryRecurse `
+									-StandbyDirectory $StandbyDirectory
 							}
 						}
 					}
 					catch {
 						Stop-Function -Message "Something went wrong restoring the secondary database.`n$($_.Exception.Message)" -InnerErrorRecord $_ -Target $SourceSqlInstance -Continue
 					}
-                    
+
 					Write-Message -Message "Restore completed." -Level Output
 				}
 			}
-            
+
 			#region Set up log shipping on the primary instance
 			# Set up log shipping on the primary instance
 			if ($PSCmdlet.ShouldProcess($SourceSqlInstance, "Configuring logshipping for primary database $db on $SourceSqlInstance")) {
@@ -1570,8 +1603,8 @@ The script will show a message that the copy destination has not been supplied a
 						-MonitorServerSecurityMode $PrimaryMonitorServerSecurityMode `
 						-MonitorCredential $PrimaryMonitorCredential `
 						-ThresholdAlertEnabled:$PrimaryThresholdAlertEnabled `
-						-Force:$Force 
-                        
+						-Force:$Force
+
 					# Check if the backup job needs to be enabled or disabled
 					if ($BackupScheduleDisabled) {
 						Set-DbaAgentJob -SqlInstance $SourceSqlInstance -SqlCredential $SourceSqlCredential -Job $DatabaseBackupJob -Disabled
@@ -1599,7 +1632,7 @@ The script will show a message that the copy destination has not been supplied a
 						-StartTime $BackupScheduleStartTime `
 						-EndTime $BackupScheduleEndTime `
 						-Force:$Force
-                  
+
 					Write-Message -Message "Configuring logshipping from primary to secondary database." -Level Output
 
 					New-DbaLogShippingPrimarySecondary -SqlInstance $SourceSqlInstance `
@@ -1691,7 +1724,7 @@ The script will show a message that the copy destination has not been supplied a
 						Set-DbaAgentJob -SqlInstance $DestinationSqlInstance -SqlCredential $DestinationSqlCredential -Job $DatabaseCopyJob -Disabled
 					}
 					else {
-						Set-DbaAgentJob -SqlInstance $DestinationSqlInstance -SqlCredential $DestinationSqlCredential -Job $DatabaseCopyJob -Enabled    
+						Set-DbaAgentJob -SqlInstance $DestinationSqlInstance -SqlCredential $DestinationSqlCredential -Job $DatabaseCopyJob -Enabled
 					}
 
 					# Check if the restore job needs to be enabled or disabled
@@ -1699,7 +1732,7 @@ The script will show a message that the copy destination has not been supplied a
 						Set-DbaAgentJob -SqlInstance $DestinationSqlInstance -SqlCredential $DestinationSqlCredential -Job $DatabaseRestoreJob -Disabled
 					}
 					else {
-						Set-DbaAgentJob -SqlInstance $DestinationSqlInstance -SqlCredential $DestinationSqlCredential -Job $DatabaseRestoreJob -Enabled    
+						Set-DbaAgentJob -SqlInstance $DestinationSqlInstance -SqlCredential $DestinationSqlCredential -Job $DatabaseRestoreJob -Enabled
 					}
 
 				}

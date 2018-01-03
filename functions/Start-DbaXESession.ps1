@@ -17,6 +17,9 @@ function Start-DbaXESession {
 
 	.PARAMETER AllSessions
 	Start all Extended Events sessions on an instance, ignoring the packaged sessions: AlwaysOn_health, system_health, telemetry_xevents.
+	
+	.PARAMETER SessionCollection
+	Internal parameter to support piping from Get-DbaXESession
 
 	.PARAMETER EnableException
 	By default, when something goes wrong we try to catch it, interpret it and give you a friendly warning message.
@@ -76,18 +79,22 @@ function Start-DbaXESession {
 		# Start each XESession
 		function Start-XESessions {
 			[CmdletBinding()]
-			param ([Microsoft.SqlServer.Management.XEvent.Session[]]$xesessions)
+			param ([Microsoft.SqlServer.Management.XEvent.Session[]]$xeSessions)
 
-			foreach ($x in $xesessions) {
-				$instance = $x.Parent.Name
-				$session = $x.Name
-				if (-Not $x.isRunning) {
+			foreach ($xe in $xeSessions) {
+				$instance = $xe.Parent.Name
+				$session = $xe.Name
+				if (-Not $xe.isRunning) {
 					Write-Message -Level Verbose -Message "Starting XEvent Session $session on $instance."
-					$x.Start()
-					Get-DbaXESession -SqlInstance $x.Parent -Session $session
+					try {
+						$xe.Start()
+					} catch {
+						Stop-Function -Message "Could not start XEvent Session on $instance" -Target $session -ErrorRecord $_ -Continue
+					}
 				} else {
 					Write-Message -Level Warning -Message "$session on $instance is already running"
 				}
+				Get-DbaXESession -SqlInstance $xe.Parent -Session $session
 			}
 		}
 	}
@@ -97,17 +104,17 @@ function Start-DbaXESession {
 			Start-XESessions $SessionCollection
 		} else {
 			foreach ($instance in $SqlInstance) {
-				$xesessions = Get-DbaXESession -SqlInstance $instance -SqlCredential $SqlCredential
+				$xeSessions = Get-DbaXESession -SqlInstance $instance -SqlCredential $SqlCredential
 				
-				# Filter xesessions based on parameters
+				# Filter xeSessions based on parameters
 				if ($Session) {
-					$xesessions = $xesessions | Where-Object { $_.Name -in $Session }
+					$xeSessions = $xeSessions | Where-Object { $_.Name -in $Session }
 				} elseif ($AllSessions) {
 					$systemSessions = @('AlwaysOn_health', 'system_health', 'telemetry_xevents')
-					$xesessions = $xesessions | Where-Object { $_.Name -notin $systemSessions }
+					$xeSessions = $xeSessions | Where-Object { $_.Name -notin $systemSessions }
 				}
 				
-				Start-XESessions $xesessions
+				Start-XESessions $xeSessions
 			}
 		}
 	}

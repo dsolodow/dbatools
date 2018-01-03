@@ -17,6 +17,9 @@ function Stop-DbaXESession {
 
 	.PARAMETER AllSessions
 	Stop all Extended Events sessions on an instance, ignoring the packaged sessions: AlwaysOn_health, system_health, telemetry_xevents.
+	
+	.PARAMETER SessionCollection
+	Internal parameter to support piping from Get-DbaXESession
 
 	.PARAMETER EnableException
 	By default, when something goes wrong we try to catch it, interpret it and give you a friendly warning message.
@@ -76,18 +79,22 @@ function Stop-DbaXESession {
 		# Stop each XESession
 		function Stop-XESessions {
 			[CmdletBinding()]
-			param ([Microsoft.SqlServer.Management.XEvent.Session[]]$xesessions)
+			param ([Microsoft.SqlServer.Management.XEvent.Session[]]$xeSessions)
 
-			foreach ($x in $xesessions) {
-				$instance = $x.Parent.Name
-				$session = $x.Name
-				if ($x.isRunning) {
+			foreach ($xe in $xeSessions) {
+				$instance = $xe.Parent.Name
+				$session = $xe.Name
+				if ($xe.isRunning) {
 					Write-Message -Level Verbose -Message "Stopping XEvent Session $session on $instance."
-					$x.Stop()
-					Get-DbaXESession -SqlInstance $x.Parent -Session $session
+					try {
+						$xe.Stop()
+					} catch {
+						Stop-Function -Message "Could not stop XEvent Session on $instance" -Target $session -ErrorRecord $_ -Continue
+					}
 				} else {
 					Write-Message -Level Warning -Message "$session on $instance is already stopped"
 				}
+				Get-DbaXESession -SqlInstance $xe.Parent -Session $session
 			}
 		}
 	}
@@ -97,17 +104,17 @@ function Stop-DbaXESession {
 			Stop-XESessions $SessionCollection
 		} else {
 			foreach ($instance in $SqlInstance) {
-				$xesessions = Get-DbaXESession -SqlInstance $instance -SqlCredential $SqlCredential
+				$xeSessions = Get-DbaXESession -SqlInstance $instance -SqlCredential $SqlCredential
 				
 				# Filter xesessions based on parameters
 				if ($Session) {
-					$xesessions = $xesessions | Where-Object { $_.Name -in $Session }
+					$xeSessions = $xeSessions | Where-Object { $_.Name -in $Session }
 				} elseif ($AllSessions) {
 					$systemSessions = @('AlwaysOn_health', 'system_health', 'telemetry_xevents')
-					$xesessions = $xesessions | Where-Object { $_.Name -notin $systemSessions }
+					$xeSessions = $xeSessions | Where-Object { $_.Name -notin $systemSessions }
 				}
 				
-				Stop-XESessions $xesessions
+				Stop-XESessions $xeSessions
 			}
 		}
 	}

@@ -282,7 +282,7 @@ function Copy-DbaDatabase {
 			$databaseProgressbar = 0
 			
 			foreach ($db in $databaseList) {
-				Write-Progress -Id 1 -Activity "Processing database file structure" -PercentComplete ($databaseProgressbar / $dbCount * 100) -Status "Processing $databaseProgressbar of $dbCount"
+				Write-Progress -Id 1 -Activity "Processing database file structure" -PercentComplete ($databaseProgressbar / $dbCount * 100) -Status "Processing $databaseProgressbar of $dbCount."
 				$dbName = $db.Name
 				Write-Message -Level Verbose -Message $dbName
 				
@@ -819,13 +819,13 @@ function Copy-DbaDatabase {
 			$fsWarning = $true
 		}
 		
-		Write-Message -Level Verbose -Message "Writing warning about filestream being enabled"
+		Write-Message -Level Verbose -Message "Writing warning about filestream being enabled."
 		if ($fsWarning) {
 			Write-Message -Level Verbose -Message "FILESTREAM enabled on $source but not $destination. Databases that use FILESTREAM will be skipped."
 		}
 		
 		if ($DetachAttach -eq $true) {
-			Write-Message -Level Verbose -Message "Checking access to remote directories"
+			Write-Message -Level Verbose -Message "Checking access to remote directories."
 			$remoteSourcePath = Join-AdminUNC $sourceNetBios (Get-SqlDefaultPaths -SqlInstance $sourceServer -filetype data)
 			
 			if ((Test-Path $remoteSourcePath) -ne $true -and $DetachAttach) {
@@ -857,7 +857,7 @@ function Copy-DbaDatabase {
 		Write-Message -Level Verbose -Message "Building database list."
 		$databaseList = New-Object System.Collections.ArrayList
 		$SupportDBs = "ReportServer", "ReportServerTempDB", "distribution"
-		foreach ($currentdb in $sourceServer.Databases) {
+		foreach ($currentdb in ($sourceServer.Databases | Where-Object IsAccessible)) {
 			$dbName = $currentdb.Name
 			$dbOwner = $currentdb.Owner
 			
@@ -950,14 +950,12 @@ function Copy-DbaDatabase {
 				
 				if ($ReuseSourceFolderStructure) {
 					$fgRows = $dbFileTable.Tables[0].Select("dbname = '$dbName' and FileType = 'ROWS'")[0]
-					$remotePath = Split-Path $fgRows
-					$remotePath = Join-AdminUNC $destNetBios $remotePath
+					$remotePath = Split-Path $fgRows.Filename
 					
-					if (!(Test-Path $remotePath)) {
-						Stop-Function -Message "Cannot resolve $remotePath. `n`nYou have specified ReuseSourceFolderStructure and exact folder structure does not exist. Halting script."
-						
+					if (!(Test-DbaSqlPath -SqlInstance $destServer -Path $remotePath)) {
+						# Stop-Function -Message "Cannot resolve $remotePath on $source. `n`nYou have specified ReuseSourceFolderStructure and exact folder structure does not exist. Halting script."
 						$copyDatabaseStatus.Status = "Failed"
-						$copyDatabaseStatus.Notes = "Can't resolve $remotePath"
+						$copyDatabaseStatus.Notes = "$remotePath does not exist on $destination and ReuseSourceFolderStructure was specified" #"Can't resolve $remotePath"
 						$copyDatabaseStatus | Select-DefaultView -Property DateTime, SourceServer, DestinationServer, Name, Type, Status, Notes -TypeName MigrationObject
 						return
 					}
@@ -1013,7 +1011,7 @@ function Copy-DbaDatabase {
 						$dropResult = Remove-SqlDatabase $destServer $dbName
 						
 						if ($dropResult -eq $false) {
-							Write-Message -Level Verbose -Message "Database could not be dropped. Aborting routine for this database"
+							Write-Message -Level Verbose -Message "Database could not be dropped. Aborting routine for this database."
 							
 							$copyDatabaseStatus.Status = "Failed"
 							$copyDatabaseStatus.Notes = "Could not drop database"
@@ -1061,15 +1059,15 @@ function Copy-DbaDatabase {
 						$backupResult = $BackupTmpResult.BackupComplete
 						if ($backupResult -eq $false) {
 							$serviceAccount = $sourceServer.ServiceAccount
-							Write-Message -Level Verbose -Message "Backup Failed. Does SQL Server account $serviceAccount have access to $NetworkShare? Aborting routine for this database."
+							Write-Message -Level Verbose -Message "Backup Failed. Does SQL Server account $serviceAccount have access to $($NetworkShare)? Aborting routine for this database."
 							
 							$copyDatabaseStatus.Status = "Failed"
-							$copyDatabaseStatus.Notes = "Backup failed. Verify service account access to $NetworkShare"
+							$copyDatabaseStatus.Notes = "Backup failed. Verify service account access to $NetworkShare."
 							$copyDatabaseStatus | Select-DefaultView -Property DateTime, SourceServer, DestinationServer, Name, Type, Status, Notes -TypeName MigrationObject
 							continue
 						}
 						
-						Write-Message -Level Verbose -Message "Resuse = $ReuseSourceFolderStructure"
+						Write-Message -Level Verbose -Message "Resuse = $ReuseSourceFolderStructure."
 						$restoreResultTmp = $backupTmpResult | Restore-DbaDatabase -SqlInstance $destServer -DatabaseName $dbName -ReuseSourceFolderStructure:$ReuseSourceFolderStructure -NoRecovery:$NoRecovery -TrustDbBackupHistory -WithReplace:$WithReplace
 						$restoreResult = $restoreResultTmp.RestoreComplete
 						
@@ -1231,7 +1229,7 @@ function Copy-DbaDatabase {
 							catch {
 								$copyDatabaseStatus.Status = "Successful - failed to apply Trustworthy"
 								$copyDatabaseStatus | Select-DefaultView -Property DateTime, SourceServer, DestinationServer, Name, Type, Status, Notes -TypeName MigrationObject
-								Stop-Function -Message "Failed to update Trustworthy to $sourceDbTrustworthy for $dbName on $destination" -Target $destination -ErrorRecord $_ -Continue
+								Stop-Function -Message "Failed to update Trustworthy to $sourceDbTrustworthy for $dbName on $destination." -Target $destination -ErrorRecord $_ -Continue
 							}
 						}
 					}
@@ -1241,12 +1239,12 @@ function Copy-DbaDatabase {
 							try {
 								$destServer.Databases[$dbName].BrokerEnabled = $sourceDbBrokerEnabled
 								$destServer.Databases[$dbName].Alter()
-								Write-Message -Level Verbose -Message "Successfully updated BrokerEnabled to $sourceDbBrokerEnabled for $dbName on $destination"
+								Write-Message -Level Verbose -Message "Successfully updated BrokerEnabled to $sourceDbBrokerEnabled for $dbName on $destination."
 							}
 							catch {
 								$copyDatabaseStatus.Status = "Successful - failed to apply BrokerEnabled"
 								$copyDatabaseStatus | Select-DefaultView -Property DateTime, SourceServer, DestinationServer, Name, Type, Status, Notes -TypeName MigrationObject
-								Stop-Function -Message "Failed to update BrokerEnabled to $sourceDbBrokerEnabled for $dbName on $destination" -Target $destination -ErrorRecord $_ -Continue
+								Stop-Function -Message "Failed to update BrokerEnabled to $sourceDbBrokerEnabled for $dbName on $destination." -Target $destination -ErrorRecord $_ -Continue
 							}
 						}
 					}

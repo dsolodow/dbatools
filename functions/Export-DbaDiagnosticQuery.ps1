@@ -126,9 +126,11 @@ function Export-DbaDiagnosticQuery {
 			$csvdbfilename = "$Path\$SqlInstance-$dbname-DQ-$number-$queryname-$Suffix.csv"
 			$csvfilename = "$Path\$SqlInstance-DQ-$number-$queryname-$Suffix.csv"
 
-            if (($result | Get-Member | Where-Object Name -eq "Query Plan").Count -gt 0) {
+            $columnnameoptions = "Query Plan", "QueryPlan", "Query_Plan", "query_plan_xml"
+            if (($result | Get-Member | Where-Object Name -in $columnnameoptions).Count -gt 0) {
                 $plannr = 0
-                foreach ($plan in $result."Query Plan") {
+                $columnname = ($result | Get-Member | Where-Object Name -In $columnnameoptions).Name
+                   foreach ($plan in $result."$columnname") {
                     $plannr += 1
                     if ($row.DatabaseSpecific) {
                         $planfilename = "$Path\$SqlInstance-$dbname-DQ-$number-$queryname-$plannr-$Suffix.sqlplan"
@@ -140,16 +142,18 @@ function Export-DbaDiagnosticQuery {
                     if (!$NoPlanExport)
                     {
 					    Write-Message -Level Output -Message "Exporting $planfilename"
-                        $plan | Out-File -FilePath $planfilename
+                        if ($plan) {$plan | Out-File -FilePath $planfilename}
                     }
                 }
 
-                $result = $result | Select-Object * -ExcludeProperty "Query Plan"
+                $result = $result | Select-Object * -ExcludeProperty "$columnname"
             }
 
-            if (($result | Get-Member | Where-Object Name -eq "Complete Query Text").Count -gt 0) {
+            $columnnameoptions = "Complete Query Text", "QueryText", "Query Text", "Query_Text", "query_sql_text"
+            if (($result | Get-Member | Where-Object Name -In $columnnameoptions ).Count -gt 0) {
                 $sqlnr = 0
-                foreach ($sql in $result."Complete Query Text") {
+                $columnname = ($result | Get-Member | Where-Object Name -In $columnnameoptions).Name
+                foreach ($sql in $result."$columnname") {
                     $sqlnr += 1
                     if ($row.DatabaseSpecific) {
                         $sqlfilename = "$Path\$SqlInstance-$dbname-DQ-$number-$queryname-$sqlnr-$Suffix.sql"
@@ -161,11 +165,11 @@ function Export-DbaDiagnosticQuery {
                     if (!$NoQueryExport)
                     {
 					    Write-Message -Level Output -Message "Exporting $sqlfilename"
-                        $sql | Out-File -FilePath $sqlfilename
+                        if ($sql) {$sql | Out-File -FilePath $sqlfilename}
                     }
                 }
 
-                $result = $result | Select-Object * -ExcludeProperty "Complete Query Text"
+                $result = $result | Select-Object * -ExcludeProperty "$columnname"
             }
 
 			switch ($ConvertTo) {

@@ -9,9 +9,9 @@
 	
 	# Script module or binary module file associated with this manifest.
 	RootModule			    = 'dbatools.psm1'
-	
+
 	# Version number of this module.
-	ModuleVersion		    = '0.9.84'
+	ModuleVersion		     = '0.9.145'
 	
 	# ID used to uniquely identify this module
 	GUID				    = '9d139310-ce45-41ce-8e8b-d76335aa1789'
@@ -260,8 +260,8 @@
 		'New-DbaAgentSchedule',
 		'Set-DbaAgentSchedule',
 		'Remove-DbaAgentSchedule',
-		'Backup-DbaDatabaseCertificate',
-		'Get-DbaDatabaseCertificate',
+		'Backup-DbaDbCertificate',
+		'Get-DbaDbCertificate',
 		'Get-DbaCmConnection',
 		'Get-DbaCmObject',
 		'Get-DbaEndpoint',
@@ -271,13 +271,13 @@
 		'Get-DbaServerAuditSpecification',
 		'Get-DbaSqlProductKey',
 		'Get-DbatoolsLog',
-		'Restore-DbaDatabaseCertificate',
-		'New-DbaDatabaseCertificate',
+		'Restore-DbaDbCertificate',
+		'New-DbaDbCertificate',
 		'New-DbaCmConnection',
 		'New-DbaDatabaseMasterKey',
 		'New-DbaServiceMasterKey',
 		'New-DbatoolsSupportPackage',
-		'Remove-DbaDatabaseCertificate',
+		'Remove-DbaDbCertificate',
 		'Remove-DbaCmConnection',
 		'Remove-DbaDatabaseMasterKey',
 		'Set-DbaCmConnection',
@@ -382,7 +382,35 @@
 		'Register-DbaConfig',
 		'Get-DbaBackupInformation',
 		'Start-DbaXESession',
-		'Stop-DbaXESession'
+		'Stop-DbaXESession',
+		'Set-DbaDbRecoveryModel',
+		'Get-DbaDbRecoveryModel',
+		'Get-DbaWaitingTask',
+		'Remove-DbaDbUser',
+		'Get-DbaDump',
+		'Invoke-DbaAdvancedRestore',
+		'Format-DbaBackupInformation',
+		'Get-DbaAgentJobStep',
+		'Test-DbaBackupInformation',
+		'Invoke-DbaBalanceDataFiles',
+		'Select-DbaBackupInformation',
+		'Rename-DbaDatabase',
+		'New-DbaPublishProfile',
+		'Publish-DbaDacpac',
+		'Export-DbaDacpac',
+		'Copy-DbaTableData',
+		'Invoke-DbaSqlCmd',
+		'Remove-DbaLogin',
+		'Get-DbaFileStream',
+		'Set-DbaFileStream',
+		'Get-DbaAgentJobCategory',
+		'New-DbaAgentJobCategory',
+		'Remove-DbaAgentJobCategory',
+		'Set-DbaAgentJobCategory',
+		'Get-DbaDbRole',
+		'Get-DbaServerRole',
+		'Find-DbaBackup',
+		'Get-DbaCpuUsage'
 	)
 	
 	# Cmdlets to export from this module
@@ -461,7 +489,6 @@
 	'Test-SqlTempDbConfiguration',
 	'Watch-SqlDbLogin',
 	'Get-DbaDatabaseFreeSpace',
-	'Invoke-DbaSqlcmd',
 	'Get-DbaQueryStoreConfig',
 	'Set-DbaQueryStoreConfig',
 	'Get-DbaRegisteredServerName',
@@ -471,7 +498,11 @@
 	'Get-DbaXEventSession',
 	'Get-DbaXEventSessionTarget',
 	'Read-DbaXEventFile',
-	'Watch-DbaXEventSession'
+	'Watch-DbaXEventSession',
+	'Get-DbaDatabaseCertificate',
+	'New-DbaDatabaseCertificate',
+	'Remove-DbaDatabaseCertificate',
+	'Restore-DbaDatabaseCertificate'
 	
 	# List of all modules packaged with this module
 	ModuleList			    = @()
@@ -515,8 +546,8 @@
 # SIG # Begin signature block
 # MIIcYgYJKoZIhvcNAQcCoIIcUzCCHE8CAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUrJybDqUtWvWj3E+FDz1Obr3f
-# tL6ggheRMIIFGjCCBAKgAwIBAgIQAsF1KHTVwoQxhSrYoGRpyjANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUo5kfemscWO7FxjHd5cywg9Ru
+# v8GggheRMIIFGjCCBAKgAwIBAgIQAsF1KHTVwoQxhSrYoGRpyjANBgkqhkiG9w0B
 # AQsFADByMQswCQYDVQQGEwJVUzEVMBMGA1UEChMMRGlnaUNlcnQgSW5jMRkwFwYD
 # VQQLExB3d3cuZGlnaWNlcnQuY29tMTEwLwYDVQQDEyhEaWdpQ2VydCBTSEEyIEFz
 # c3VyZWQgSUQgQ29kZSBTaWduaW5nIENBMB4XDTE3MDUwOTAwMDAwMFoXDTIwMDUx
@@ -647,22 +678,22 @@
 # c3N1cmVkIElEIENvZGUgU2lnbmluZyBDQQIQAsF1KHTVwoQxhSrYoGRpyjAJBgUr
 # DgMCGgUAoHgwGAYKKwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMx
 # DAYKKwYBBAGCNwIBBDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkq
-# hkiG9w0BCQQxFgQUxvCYToea6n62RahPkILtnY6OQtIwDQYJKoZIhvcNAQEBBQAE
-# ggEAftq9iKY4lMpwDhZt0qd4m+UllSbuaxZFQPUDUDQdw4xY/346WjJLJKRTTcSR
-# u2qfx4kZjAhyjVt3b2VOkTF3ATSxKOULb9YmSBj7pN8Zdk696efLkyF4JrnZ4Azh
-# 4QdLX0ORxYMmDD3g1HlsCIOoQcf3PxAK4/S92hdhDHjvUFGh7r/8vOUoFmfND12e
-# e/VqyPaRHjArmYOiQIUosCq0UkFdhnH+PL/NcvOijUwiKJNoTiaGG1Vzjsaz1ZXV
-# 7RY6cocuJjGI0qwJL/89H1A3A8qTkYsGFubZJCgc8Uj0JHNuJquM600em+71sNYr
-# mWlHAyvreKtEZMJ2CoSSSzo+B6GCAg8wggILBgkqhkiG9w0BCQYxggH8MIIB+AIB
+# hkiG9w0BCQQxFgQU+ytqGaXzY6VxF+th2tVXQsqRBMAwDQYJKoZIhvcNAQEBBQAE
+# ggEANdAWPeYXoMPoYdp9agqKBAdpBFzgW2HvOpXVfiD+jzfPLWhKEPy4qhnqkn5C
+# 2uDDwAcVKsU9eQd5tMjbzgNd3LVa8gWbUsZiAg5dJjVOgyvNB5xvxFRYl+9mrV9f
+# h0EHioQNkRa+7crkomKFezd5EIwZYp83YQiRilsS0bPcaQ9GyTEY6W8czjc2X84M
+# Q1fevGJjofW3Go7dz/OJRjBt0/DlpmJTncU3I1nrjpUis7u2I6lxzKJbxd4tO0Ai
+# KaOwWQy1yF6gbheFvJDbOl+r0f9MMHU3SUeqYr0wWrSzHtLgDQcMQbnUrwcz7KeO
+# u5biu+/sN9F1Ub7wRB71mTA32KGCAg8wggILBgkqhkiG9w0BCQYxggH8MIIB+AIB
 # ATB2MGIxCzAJBgNVBAYTAlVTMRUwEwYDVQQKEwxEaWdpQ2VydCBJbmMxGTAXBgNV
 # BAsTEHd3dy5kaWdpY2VydC5jb20xITAfBgNVBAMTGERpZ2lDZXJ0IEFzc3VyZWQg
 # SUQgQ0EtMQIQAwGaAjr/WLFr1tXq5hfwZjAJBgUrDgMCGgUAoF0wGAYJKoZIhvcN
-# AQkDMQsGCSqGSIb3DQEHATAcBgkqhkiG9w0BCQUxDxcNMTcxMDMwMDIyNTEyWjAj
-# BgkqhkiG9w0BCQQxFgQUSrUPhpTwZAxiozSgURYwf8YPHhQwDQYJKoZIhvcNAQEB
-# BQAEggEAhm6nFPJKC4JvEbupQ35cuqWrSPP6pTtWcz3MNsP/hZ1w25KuVSgfcwgY
-# IB/Za2GaVi6WIzI7BlDtIXMjNJVp+1uTcSUYqetL0aSCykKyeCx20xtqD4BcKA09
-# ypVU4QcRBtKKJfpX6tyKMVjBCA8/CZvxzyZZ9lAmX/O8yuQh6fAxpfPyKNVLXZIT
-# OADx5IthtWCYBqHDJq1oCCSuSJs7txArjWui6cIgwtI24MvADgXwIZA5dBwbx6UN
-# Kuse5DRO3iE9Rq+C9Yx+hWjw9UmAeXSotER3DFFEQvs6WTjfvzWDFVvbo8Ym3b/W
-# FFbXXAifrTZLdSspGb77qH/oqfup2Q==
+# AQkDMQsGCSqGSIb3DQEHATAcBgkqhkiG9w0BCQUxDxcNMTgwMTAyMDY0ODI3WjAj
+# BgkqhkiG9w0BCQQxFgQUCWq8p6nk95bcEAhqASjvNICl2n4wDQYJKoZIhvcNAQEB
+# BQAEggEAlEhGjbrv7YWxTv0qDfmD5FQ0fMsv95GYAF3CD/fXyH77MC3qPLMlUGOd
+# IKgun1NrMQSwh57nUgp9q4Q6WpK4QW1mkGJd0cw0KJOjMVzTTmh0eg5AeVM7Od0G
+# aMcQtcZsinrby9PQQDL+nba9081VtMJd3Ito8cqRPdJ8HIm79n9sNs//8QKqqAG4
+# qAUbDd5io5m0YWfX5xHSB78poJUFSdYIyMfk2xl+OrhTkbnOxPtPYwmY2oQdHht3
+# dVHi8DsE0Z03Tkrz4tKfyeSTLYPQHhjrv3yywCxTm4E4mjkCaSkn1/0w5l7dUgXy
+# VFYrHj2RY2eEzYw5SeWIjfTx7yH0GQ==
 # SIG # End signature block

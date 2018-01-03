@@ -16,7 +16,7 @@ Copyright (C) 2016 Chrissy LeMaire
 License: GNU GPL v3 https://opensource.org/licenses/GPL-3.0
 
 .PARAMETER SqlInstance 
-SQLServer name or SMO object representing the SQL Server to connect to. This can be a
+SQL Server name or SMO object representing the SQL Server to connect to. This can be a
 collection and receive pipeline input.
 
 .PARAMETER SqlCredential
@@ -107,6 +107,7 @@ Returns all active directory users within all windows AD groups that have logins
 								InstanceName = $server.ServiceName
 								ComputerName = $server.NetName
 								Login = $memberDomain + "\" + $member.SamAccountName
+								DisplayName = $member.DisplayName
 								MemberOf = $AdGroup
 							}
 						}
@@ -134,7 +135,7 @@ Returns all active directory users within all windows AD groups that have logins
 		}
 	}
 	
-	PROCESS
+	process
 	{
 		foreach ($Instance in $SqlInstance)
 		{

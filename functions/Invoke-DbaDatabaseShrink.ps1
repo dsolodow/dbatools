@@ -55,10 +55,23 @@ Specifies the method that is used to shrink the database
 Timeout in minutes. Defaults to infinity (shrinks can take a while.)
 
 .PARAMETER LogsOnly
-Only shrink the log file, not the entire database
+Deprecated. Use FileType instead
+
+.PARAMETER FileType
+Specifies the files types that will be shrunk
+
+		All
+			All Data and Log files are shrunk, using database shrink (Default)
+		Data
+			Just the Data files are shrunk using file shrink
+		Log
+			Just the Log files are shrunk using file shrink
 
 .PARAMETER ExcludeIndexStats
 Exclude statistics about fragmentation
+	
+.PARAMETER ExcludeUpdateUsage
+Exclude DBCC UPDATE USAGE for database
 	
 .PARAMETER WhatIf
 Shows what would happen if the command were to run
@@ -117,14 +130,22 @@ Shrinks all databases on SQL2012 (not ideal for production)
 		[int]$PercentFreeSpace = 0,
 		[ValidateSet('Default', 'EmptyFile', 'NoTruncate', 'TruncateOnly')]
 		[string]$ShrinkMethod = "Default",
+		[ValidateSet('All', 'Data', 'Log')]
+		[string]$FileType = "All",
 		[int]$StatementTimeout = 0,
 		[switch]$LogsOnly,
 		[switch]$ExcludeIndexStats,
+		[switch]$ExcludeUpdateUsage,
 		[switch][Alias('Silent')]$EnableException
 	)
 
 	begin {
-		$StatementTimeoutMinutes = $StatementTimeout * 60
+		if ($LogsOnly) {
+			Test-DbaDeprecation -DeprecatedOn "1.0.0" -Parameter "LogsOnly"
+			$FileType = 'Log'
+		}
+
+		$StatementTimeoutSeconds = $StatementTimeout * 60
 
 		$sql = "SELECT
 				indexstats.avg_fragmentation_in_percent
@@ -169,9 +190,9 @@ Shrinks all databases on SQL2012 (not ideal for production)
 			else {
 				Write-Message -Level Verbose -Message "Changing statement timeout to $StatementTimeout minutes"
 			}
-			$server.ConnectionContext.StatementTimeout = $StatementTimeout
+			$server.ConnectionContext.StatementTimeout = $StatementTimeoutSeconds
 
-			$dbs = $server.Databases | Where-Object { $_.IsSystemObject -eq $false }
+			$dbs = $server.Databases | Where-Object { $_.IsSystemObject -eq $false -and $_.IsAccessible }
 
 			if ($Database) {
 				$dbs = $dbs | Where-Object Name -In $Database
@@ -183,10 +204,6 @@ Shrinks all databases on SQL2012 (not ideal for production)
 
 			foreach ($db in $dbs) {
 				Write-Message -Level Verbose -Message "Processing $db on $instance"
-
-				if ($db.IsAccessible -eq $false) {
-					Stop-Function -Message "The database $db on server $instance is not accessible. Skipping database." -Continue
-				}
 				
 				if ($db.IsDatabaseSnapshot) {
 					Write-Message -Level Warning -Message "The database $db on server $instance is a snapshot and cannot be shrunk. Skipping database."
@@ -217,35 +234,55 @@ Shrinks all databases on SQL2012 (not ideal for production)
 						}
 						
 						$start = Get-Date
-						
-						if ($LogsOnly) {
-							try {
-								Write-Message -Level Verbose -Message "Beginning shrink of log files"
-								$db.LogFiles.Shrink($PercentFreeSpace, $ShrinkMethod)
-								$db.LogFiles.Refresh()
-								Write-Message -Level Verbose -Message "Recalculating space usage"
-								$db.RecalculateSpaceUsage()
-								$success = $true
-								$notes = $null
+
+						switch ($FileType) {
+							'Log' {
+								try {
+									Write-Message -Level Verbose -Message "Beginning shrink of log files"
+									$db.LogFiles.Shrink($PercentFreeSpace, $ShrinkMethod)
+									$db.Refresh()
+									Write-Message -Level Verbose -Message "Recalculating space usage"
+									$success = $true
+									$notes = $null
+								}
+								catch {
+									$success = $false
+									$notes = $_.Exception.InnerException
+								}
 							}
-							catch {
-								$success = $false
-								$notes = $_.Exception.InnerException
+							'Data' {
+								try {
+									Write-Message -Level Verbose -Message "Beginning shrink of data files"
+									foreach ($fileGroup in $db.FileGroups) {
+										foreach ($file in $fileGroup.Files) {
+											Write-Message -Level Verbose -Message "Beggining shrink of $($file.Name)"
+											$file.Shrink($PercentFreeSpace, $ShrinkMethod)
+										}
+									}
+									$db.Refresh()
+									Write-Message -Level Verbose -Message "Recalculating space usage"
+									if (-not $ExcludeUpdateUsage) { $db.RecalculateSpaceUsage() }
+									$success = $true
+									$notes = $null
+								} catch {
+									$success = $false
+									$notes = $_.Exception.InnerException
+								}
 							}
-						}
-						else {
-							try {
-								Write-Message -Level Verbose -Message "Beginning shrink of entire database"
-								$db.Shrink($PercentFreeSpace, $ShrinkMethod)
-								$db.Refresh()
-								Write-Message -Level Verbose -Message "Recalculating space usage"
-								$db.RecalculateSpaceUsage()
-								$success = $true
-								$notes = $null
-							}
-							catch {
-								$success = $false
-								$notes = $_.Exception.InnerException
+							default {
+								try {
+									Write-Message -Level Verbose -Message "Beginning shrink of entire database"
+									$db.Shrink($PercentFreeSpace, $ShrinkMethod)
+									$db.Refresh()
+									Write-Message -Level Verbose -Message "Recalculating space usage"
+									if (-not $ExcludeUpdateUsage) { $db.RecalculateSpaceUsage() }
+									$success = $true
+									$notes = $null
+								}
+								catch {
+									$success = $false
+									$notes = $_.Exception.InnerException
+								}
 							}
 						}
 						

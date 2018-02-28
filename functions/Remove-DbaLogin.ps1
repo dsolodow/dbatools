@@ -1,8 +1,8 @@
 ﻿function Remove-DbaLogin {
-<#
+    <#
 .SYNOPSIS
 Drops a Login
-	
+
 .DESCRIPTION
 Tries a bunch of different ways to remove a Login or two or more.
 
@@ -25,16 +25,16 @@ Shows what would happen if the command were to run. No actions are actually perf
 Prompts you for confirmation before executing any changing operations within the command.
 
 .PARAMETER EnableException
-		By default, when something goes wrong we try to catch it, interpret it and give you a friendly warning message.
-		This avoids overwhelming you with "sea of red" exceptions, but is inconvenient because it basically disables advanced scripting.
-		Using this switch turns this "nice by default" feature off and enables you to catch exceptions with your own try/catch.
-		
+        By default, when something goes wrong we try to catch it, interpret it and give you a friendly warning message.
+        This avoids overwhelming you with "sea of red" exceptions, but is inconvenient because it basically disables advanced scripting.
+        Using this switch turns this "nice by default" feature off and enables you to catch exceptions with your own try/catch.
+
 .NOTES
 Tags: Delete, Logins
 
 Website: https://dbatools.io
 Copyright: (C) Chrissy LeMaire, clemaire@gmail.com
-License: GNU GPL v3 https://opensource.org/licenses/GPL-3.0
+License: MIT https://opensource.org/licenses/MIT
 
 .LINK
 https://dbatools.io/Remove-DbaLogin
@@ -60,59 +60,59 @@ Get-DbaLogin -SqlInstance server\instance -Login yourlogin | Remove-DbaLogin
 removes mylogin on SQL Server server\instance
 
 #>
-	[CmdletBinding(SupportsShouldProcess = $true, ConfirmImpact = 'High', DefaultParameterSetName = "Default")]
-	Param (
-		[parameter( , Mandatory, ParameterSetName = "instance")]
-		[Alias("ServerInstance", "SqlServer")]
-		[DbaInstanceParameter[]]$SqlInstance,
-		[parameter(Mandatory = $false)]
-		[Alias("Credential")]
-		[PSCredential]$SqlCredential,
-		[parameter(Mandatory, ParameterSetName = "instance")]
-		[object[]]$Login,
-		[Parameter(ValueFromPipeline, Mandatory, ParameterSetName = "Logins")]
-		[Microsoft.SqlServer.Management.Smo.Login[]]$LoginCollection,
-		[switch]$EnableException
-	)
-	
-	process {
-		
-		foreach ($instance in $SqlInstance) {
-			try {
-				Write-Message -Level Verbose -Message "Connecting to $instance"
-				$server = Connect-SqlInstance -SqlInstance $instance -SqlCredential $sqlcredential
-			}
-			catch {
-				Stop-Function -Message "Failure" -Category ConnectionError -ErrorRecord $_ -Target $instance -Continue
-			}
-			$Logincollection += $server.Logins | Where-Object { $_.Name -in $Login }
-		}
-		
-		foreach ($currentlogin in $Logincollection) {
-			try {
-				$server = $currentlogin.Parent
-				if ($Pscmdlet.ShouldProcess("$currentlogin on $server", "KillLogin")) {
-					$currentlogin.Drop()
-					
-					[pscustomobject]@{
-						ComputerName	 = $server.NetName
-						InstanceName	 = $server.ServiceName
-						SqlInstance	     = $server.DomainInstanceName
-						Login		     = $currentlogin.name
-						Status		     = "Dropped"
-					}
-				}
-			}
-			catch {
-				[pscustomobject]@{
-					ComputerName	 = $server.NetName
-					InstanceName	 = $server.ServiceName
-					SqlInstance	     = $server.DomainInstanceName
-					Login		     = $currentlogin.name
-					Status		     = $_
-				}
-				Stop-Function -Message "Could not drop Login $currentlogin on $server" -ErrorRecord $_ -Target $currentlogin -Continue
-			}
-		}
-	}
+    [CmdletBinding(SupportsShouldProcess = $true, ConfirmImpact = 'High', DefaultParameterSetName = "Default")]
+    Param (
+        [parameter( , Mandatory, ParameterSetName = "instance")]
+        [Alias("ServerInstance", "SqlServer")]
+        [DbaInstanceParameter[]]$SqlInstance,
+        [parameter(Mandatory = $false)]
+        [Alias("Credential")]
+        [PSCredential]$SqlCredential,
+        [parameter(Mandatory, ParameterSetName = "instance")]
+        [object[]]$Login,
+        [Parameter(ValueFromPipeline, Mandatory, ParameterSetName = "Logins")]
+        [Microsoft.SqlServer.Management.Smo.Login[]]$LoginCollection,
+        [switch]$EnableException
+    )
+
+    process {
+
+        foreach ($instance in $SqlInstance) {
+            try {
+                Write-Message -Level Verbose -Message "Connecting to $instance"
+                $server = Connect-SqlInstance -SqlInstance $instance -SqlCredential $sqlcredential
+            }
+            catch {
+                Stop-Function -Message "Failure" -Category ConnectionError -ErrorRecord $_ -Target $instance -Continue
+            }
+            $Logincollection += $server.Logins | Where-Object { $_.Name -in $Login }
+        }
+
+        foreach ($currentlogin in $Logincollection) {
+            try {
+                $server = $currentlogin.Parent
+                if ($Pscmdlet.ShouldProcess("$currentlogin on $server", "KillLogin")) {
+                    $currentlogin.Drop()
+
+                    [pscustomobject]@{
+                        ComputerName = $server.NetName
+                        InstanceName = $server.ServiceName
+                        SqlInstance  = $server.DomainInstanceName
+                        Login        = $currentlogin.name
+                        Status       = "Dropped"
+                    }
+                }
+            }
+            catch {
+                [pscustomobject]@{
+                    ComputerName = $server.NetName
+                    InstanceName = $server.ServiceName
+                    SqlInstance  = $server.DomainInstanceName
+                    Login        = $currentlogin.name
+                    Status       = $_
+                }
+                Stop-Function -Message "Could not drop Login $currentlogin on $server" -ErrorRecord $_ -Target $currentlogin -Continue
+            }
+        }
+    }
 }

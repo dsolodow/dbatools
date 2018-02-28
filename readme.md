@@ -1,5 +1,7 @@
 # dbatools
 
+> PowerShell Core (aka PowerShell 6+) went GA (generally available) and supported in January of 2018. Please be aware at this time we do not support this version of PowerShell. It is on the roadmap but at this time there is no estimated time we will be supporting it.
+
 <img align="left" src=https://blog.netnerds.net/wp-content/uploads/2016/05/dbatools.png alt="dbatools logo">  dbatools is sort of like a command-line SQL Server Management Studio. The project initially started out as Start-SqlMigration.ps1, but has now grown into a collection of [over 300 commands](https://dbatools.io/commands) that help automate SQL Server tasks and encourage best practices.
 
 Got ideas for new commands? Please propose them as [issues](https://dbatools.io/issues) and let us know what you'd like to see. Bug reports should also be filed under this repository's [issues](https://github.com/sqlcollaborative/dbatools/issues) section.
@@ -30,7 +32,7 @@ In addition to the simple things you can do in SSMS (like starting a job), we've
 
 ## Usage examples
 
-As previously mentioned, dbatools now offers [over 300 commands](https://dbatools.io/commands)! [Here are some of the ones we highlight at conferences](https://gist.github.com/potatoqualitee/e8932b64aeb6ef404e252d656b6318a2) - PowerShell v3 and above required.
+As previously mentioned, dbatools now offers [over 300 commands](https://dbatools.io/commands)! [Here are some of the ones we highlight at conferences](https://gist.github.com/potatoqualitee/e8932b64aeb6ef404e252d656b6318a2) - PowerShell v3 and above required. (See below for important information about alternative logins and specifying SQL Server ports).
 
 ```powershell
 # Set some vars
@@ -190,6 +192,42 @@ Get-DbaDbVirtualLogFile -SqlInstance $new -Database db1 | Measure-Object
 
 ```
 
+## Important Note
+
+#### Alternative SQL Credentials
+
+By default, all SQL-based commands will login to SQL Server using Trusted/Windows Authentication. To use alternative credentials, including SQL Logins or alternative Windows credentials, use the `-SqlCredential`. This parameter accepts the results of `Get-Credential` which generates a [PSCredential](https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.security/get-credential?view=powershell-5.1) object.
+
+```powershell
+Get-DbaDatabase -SqlInstance sql2017 -SqlCredential (Get-Credential sqladmin)
+```
+
+<a href="https://dbatools.io/wp-content/uploads/2016/05/cred.jpg"><img class="aligncenter size-full wp-image-6897" src="https://dbatools.io/wp-content/uploads/2016/05/cred.jpg" alt="" width="322" height="261" /></a>
+
+A few (or maybe just one - [Restore-DbaDatabase](/Restore-DbaDatabase)), you can also use `-AzureCredential`.
+
+#### Alternative Windows Credentials
+
+For commands that access Windows such as [Get-DbaDiskSpace](/Get-DbaDiskSpace), you will pass the `-Credential` parameter.
+
+```powershell
+$cred = Get-Credential ad\winadmin
+Get-DbaDiskSpace -ComputerName sql2017 -Credential $cred
+```
+
+To store credentials to disk, please read more at [Jaap Brasser's blog](https://www.jaapbrasser.com/quickly-and-securely-storing-your-credentials-powershell/).
+
+#### Servers with custom ports
+
+If you use non-default ports and SQL Browser is disabled, you can access servers using a semicolon (functionality we've added) or a comma (the way Microsoft does it).
+
+```powershell
+-SqlInstance sql2017:55559
+-SqlInstance 'sql2017,55559'
+```
+
+Note that PowerShell sees commas as arrays, so you must surround the host name with quotes.
+
 ## Support
 
 dbatools aims to support as many configurations as possible, including
@@ -204,3 +242,7 @@ dbatools aims to support as many configurations as possible, including
 * Auto-populated parameters for command-line completion (think -Database and -Login)
 
 Read more at our website at [dbatools.io](https://dbatools.io)
+
+## Contributing
+
+Want to contribute to the project? We'd love to have you! Visit our [contributing.md](https://github.com/sqlcollaborative/dbatools/blob/master/contributing.md) for a jump start.

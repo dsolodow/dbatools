@@ -1,5 +1,5 @@
 function Find-DbaTrigger {
-<#
+    <#
 .SYNOPSIS
 Returns all triggers that contain a specific case-insensitive string or regex pattern.
 
@@ -34,16 +34,16 @@ Warning - this will likely make it super slow if you run it on all databases.
 By default system databases are ignored but you can include them within the search using this parameter
 
 .PARAMETER EnableException
-		By default, when something goes wrong we try to catch it, interpret it and give you a friendly warning message.
-		This avoids overwhelming you with "sea of red" exceptions, but is inconvenient because it basically disables advanced scripting.
-		Using this switch turns this "nice by default" feature off and enables you to catch exceptions with your own try/catch.
-		
+        By default, when something goes wrong we try to catch it, interpret it and give you a friendly warning message.
+        This avoids overwhelming you with "sea of red" exceptions, but is inconvenient because it basically disables advanced scripting.
+        Using this switch turns this "nice by default" feature off and enables you to catch exceptions with your own try/catch.
+
 .NOTES
 Author: Cláudio Silva, @ClaudioESSilva
 
 Website: https://dbatools.io
 Copyright: (C) Chrissy LeMaire, clemaire@gmail.com
-License: GNU GPL v3 https://opensource.org/licenses/GPL-3.0
+License: MIT https://opensource.org/licenses/MIT
 
 .LINK
 https://dbatools.io/Find-DbaTrigger
@@ -219,7 +219,7 @@ Searches in "mydb" database triggers for "runtime" in the textbody
                                 Write-Message -Level Verbose -Message "Looking in trigger $trigger for textBody with pattern $pattern in object $triggerParentSchema.$triggerParent at database $db"
                                 if ($row.TextBody -match $Pattern) {
 
-                                    $tr = ($db.Tables | Where-Object{$_.Name -eq $triggerParent -and $_.Schema -eq $triggerParentSchema}).Triggers | Where-Object name -eq $row.name
+                                    $tr = ($db.Tables | Where-Object {$_.Name -eq $triggerParent -and $_.Schema -eq $triggerParentSchema}).Triggers | Where-Object name -eq $row.name
 
                                     $triggerText = $tr.TextBody.split("`n`r")
                                     $trTextFound = $triggerText | Select-String -Pattern $Pattern | ForEach-Object { "(LineNumber: $($_.LineNumber)) $($_.ToString().Trim())" }

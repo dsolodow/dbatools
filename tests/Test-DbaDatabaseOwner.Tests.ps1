@@ -1,24 +1,43 @@
-$CommandName = $MyInvocation.MyCommand.Name.Replace(".Tests.ps1","")
+$CommandName = $MyInvocation.MyCommand.Name.Replace(".Tests.ps1", "")
 Write-Host -Object "Running $PSCommandpath" -ForegroundColor Cyan
 . "$PSScriptRoot\constants.ps1"
 
-Describe "$Name Tests"{
+Describe "$CommandName Unit Tests" -Tag "UnitTests" {
+    Context "Validate parameters" {
+        <#
+            The $paramCount is adjusted based on the parameters your command will have.
+
+            The $defaultParamCount is adjusted based on what type of command you are writing the test for:
+                - Commands that *do not* include SupportShouldProcess, set defaultParamCount    = 11
+                - Commands that *do* include SupportShouldProcess, set defaultParamCount        = 13
+        #>
+        $paramCount = 7
+        $defaultParamCount = 11
+        [object[]]$params = (Get-ChildItem function:\Test-DbaDatabaseOwner).Parameters.Keys
+        $knownParameters = 'SqlInstance', 'SqlCredential', 'Database', 'ExcludeDatabase', 'TargetLogin', 'EnableException', 'Detailed'
+        It "Should contain our specific parameters" {
+            ( (Compare-Object -ReferenceObject $knownParameters -DifferenceObject $params -IncludeEqual | Where-Object SideIndicator -eq "==").Count ) | Should Be $paramCount
+        }
+        It "Should only contain $paramCount parameters" {
+            $params.Count - $defaultParamCount | Should Be $paramCount
+        }
+    }
     InModuleScope 'dbatools' {
         Context "Connects to SQL Server" {
             It -Skip "Should not throw" {
                 Mock Connect-SQLInstance -MockWith {
                     [object]@{
-                        Name = 'SQLServerName';
+                        Name      = 'SQLServerName';
                         Databases = [object]@(
                             @{
-                                Name = 'db1';
+                                Name   = 'db1';
                                 Status = 'Normal';
-                                Owner = 'sa'
+                                Owner  = 'sa'
                             }
                         ); #databases
-                        Logins = [object]@(
+                        Logins    = [object]@(
                             @{
-                                ID = 1;
+                                ID   = 1;
                                 Name = 'sa';
                             }
                         ) #logins
@@ -30,17 +49,17 @@ Describe "$Name Tests"{
             It -Skip "Should not return if no wrong owner for default" {
                 Mock Connect-SQLInstance -MockWith {
                     [object]@{
-                        Name = 'SQLServerName';
+                        Name      = 'SQLServerName';
                         Databases = [object]@(
                             @{
-                                Name = 'db1';
+                                Name   = 'db1';
                                 Status = 'Normal';
-                                Owner = 'sa'
+                                Owner  = 'sa'
                             }
                         ); #databases
-                        Logins = [object]@(
+                        Logins    = [object]@(
                             @{
-                                ID = 1;
+                                ID   = 1;
                                 Name = 'sa';
                             }
                         ) #logins
@@ -53,16 +72,16 @@ Describe "$Name Tests"{
                 Mock Connect-SQLInstance -MockWith {
                     [object]@{
                         DomainInstanceName = 'SQLServerName';
-                        Databases = [object]@(
+                        Databases          = [object]@(
                             @{
-                                Name = 'db1';
+                                Name   = 'db1';
                                 Status = 'Normal';
-                                Owner = 'WrongOWner'
+                                Owner  = 'WrongOWner'
                             }
                         ); #databases
-                        Logins = [object]@(
+                        Logins             = [object]@(
                             @{
-                                ID = 1;
+                                ID   = 1;
                                 Name = 'sa';
                             }
                         ) #logins
@@ -81,16 +100,16 @@ Describe "$Name Tests"{
                 Mock Connect-SQLInstance -MockWith {
                     [object]@{
                         DomainInstanceName = 'SQLServerName';
-                        Databases = [object]@(
+                        Databases          = [object]@(
                             @{
-                                Name = 'db1';
+                                Name   = 'db1';
                                 Status = 'Normal';
-                                Owner = 'sa'
+                                Owner  = 'sa'
                             }
                         ); #databases
-                        Logins = [object]@(
+                        Logins             = [object]@(
                             @{
-                                ID = 1;
+                                ID   = 1;
                                 Name = 'sa';
                             }
                         ) #logins
@@ -109,21 +128,21 @@ Describe "$Name Tests"{
                 Mock Connect-SQLInstance -MockWith {
                     [object]@{
                         DomainInstanceName = 'SQLServerName';
-                        Databases = [object]@(
+                        Databases          = [object]@(
                             @{
-                                Name = 'db1';
+                                Name   = 'db1';
                                 Status = 'Normal';
-                                Owner = 'WrongOWner'
+                                Owner  = 'WrongOWner'
                             }
                             @{
-                                Name = 'db2';
+                                Name   = 'db2';
                                 Status = 'Normal';
-                                Owner = 'sa'
+                                Owner  = 'sa'
                             }
                         ); #databases
-                        Logins = [object]@(
+                        Logins             = [object]@(
                             @{
-                                ID = 1;
+                                ID   = 1;
                                 Name = 'sa';
                             }
                         ) #logins
@@ -142,21 +161,21 @@ Describe "$Name Tests"{
                 Mock Connect-SQLInstance -MockWith {
                     [object]@{
                         DomainInstanceName = 'SQLServerName';
-                        Databases = [object]@(
+                        Databases          = [object]@(
                             @{
-                                Name = 'db1';
+                                Name   = 'db1';
                                 Status = 'Normal';
-                                Owner = 'WrongOWner'
+                                Owner  = 'WrongOWner'
                             }
                             @{
-                                Name = 'db2';
+                                Name   = 'db2';
                                 Status = 'Normal';
-                                Owner = 'WrongOWner'
+                                Owner  = 'WrongOWner'
                             }
                         ); #databases
-                        Logins = [object]@(
+                        Logins             = [object]@(
                             @{
-                                ID = 1;
+                                ID   = 1;
                                 Name = 'sa';
                             }
                         ) #logins
@@ -182,21 +201,21 @@ Describe "$Name Tests"{
                 Mock Connect-SQLInstance -MockWith {
                     [object]@{
                         DomainInstanceName = 'SQLServerName';
-                        Databases = [object]@(
+                        Databases          = [object]@(
                             @{
-                                Name = 'db1';
+                                Name   = 'db1';
                                 Status = 'Normal';
-                                Owner = 'WrongOwner'
+                                Owner  = 'WrongOwner'
                             }
                             @{
-                                Name = 'db2';
+                                Name   = 'db2';
                                 Status = 'Normal';
-                                Owner = 'WrongOwner'
+                                Owner  = 'WrongOwner'
                             }
                         ); #databases
-                        Logins = [object]@(
+                        Logins             = [object]@(
                             @{
-                                ID = 1;
+                                ID   = 1;
                                 Name = 'sa';
                             }
                         ) #logins
@@ -207,8 +226,8 @@ Describe "$Name Tests"{
                 $null = Test-DbaDatabaseOwner -SqlInstance 'SQLServerName' -TargetLogin 'WrongLogin'
                 $assertMockParams = @{
                     'CommandName' = 'Stop-Function'
-                    'Times' = 1
-                    'Exactly' = $true
+                    'Times'       = 1
+                    'Exactly'     = $true
                 }
                 Assert-MockCalled @assertMockParams
             } # it
@@ -216,21 +235,21 @@ Describe "$Name Tests"{
                 Mock Connect-SQLInstance -MockWith {
                     [object]@{
                         DomainInstanceName = 'SQLServerName';
-                        Databases = [object]@(
+                        Databases          = [object]@(
                             @{
-                                Name = 'db1';
+                                Name   = 'db1';
                                 Status = 'Normal';
-                                Owner = 'WrongOWner'
+                                Owner  = 'WrongOWner'
                             }
                             @{
-                                Name = 'db2';
+                                Name   = 'db2';
                                 Status = 'Normal';
-                                Owner = 'sa'
+                                Owner  = 'sa'
                             }
                         ); #databases
-                        Logins = [object]@(
+                        Logins             = [object]@(
                             @{
-                                ID = 1;
+                                ID   = 1;
                                 Name = 'sa';
                             }
                         ) #logins

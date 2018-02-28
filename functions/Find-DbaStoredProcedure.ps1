@@ -30,16 +30,16 @@ Warning - this will likely make it super slow if you run it on all databases.
 By default system databases are ignored but you can include them within the search using this parameter
 
 .PARAMETER EnableException
-		By default, when something goes wrong we try to catch it, interpret it and give you a friendly warning message.
-		This avoids overwhelming you with "sea of red" exceptions, but is inconvenient because it basically disables advanced scripting.
-		Using this switch turns this "nice by default" feature off and enables you to catch exceptions with your own try/catch.
-		
+        By default, when something goes wrong we try to catch it, interpret it and give you a friendly warning message.
+        This avoids overwhelming you with "sea of red" exceptions, but is inconvenient because it basically disables advanced scripting.
+        Using this switch turns this "nice by default" feature off and enables you to catch exceptions with your own try/catch.
+
 .NOTES
 Author: Stephen Bennett, https://sqlnotesfromtheunderground.wordpress.com/
 
 Website: https://dbatools.io
 Copyright: (C) Chrissy LeMaire, clemaire@gmail.com
-License: GNU GPL v3 https://opensource.org/licenses/GPL-3.0
+License: MIT https://opensource.org/licenses/MIT
 
 .LINK
 https://dbatools.io/Find-DbaStoredProcedure
@@ -165,7 +165,7 @@ Searches in "mydb" database stored procedures for "runtime" in the textbody
 
                     foreach ($sp in $storedprocedures) {
                         $totalcount++; $sproccount++; $everyserverspcount++
-                        
+
                         $procSchema = $sp.Schema
                         $proc = $sp.Name
 

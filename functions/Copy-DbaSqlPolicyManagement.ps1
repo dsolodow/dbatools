@@ -63,7 +63,7 @@ function Copy-DbaSqlPolicyManagement {
 
             Website: https://dbatools.io
             Copyright: (C) Chrissy LeMaire, clemaire@gmail.com
-            License: GNU GPL v3 https://opensource.org/licenses/GPL-3.0
+            License: MIT https://opensource.org/licenses/MIT
 
         .LINK
             https://dbatools.io/Copy-DbaSqlPolicyManagement
@@ -164,7 +164,7 @@ function Copy-DbaSqlPolicyManagement {
                 DateTime          = [DbaDateTime](Get-Date)
             }
 
-            if ($destStore.Conditions[$conditionName] -ne $null) {
+            if ($null -ne $destStore.Conditions[$conditionName]) {
                 if ($force -eq $false) {
                     Write-Message -Level Verbose -Message "condition '$conditionName' was skipped because it already exists on $destination. Use -Force to drop and recreate"
 
@@ -234,7 +234,7 @@ function Copy-DbaSqlPolicyManagement {
                 DateTime          = [DbaDateTime](Get-Date)
             }
 
-            if ($destStore.Policies[$policyName] -ne $null) {
+            if ($null -ne $destStore.Policies[$policyName]) {
                 if ($force -eq $false) {
                     Write-Message -Level Verbose -Message "Policy '$policyName' was skipped because it already exists on $destination. Use -Force to drop and recreate"
 

@@ -41,7 +41,7 @@ function Test-DbaTempDbConfiguration {
 
             dbatools PowerShell module (https://dbatools.io, clemaire@gmail.com)
             Copyright (C) 2016 Chrissy LeMaire
-            License: GNU GPL v3 https://opensource.org/licenses/GPL-3.0
+            License: MIT https://opensource.org/licenses/MIT
 
         .LINK
             https://dbatools.io/Test-DbaTempDbConfiguration
@@ -134,7 +134,7 @@ function Test-DbaTempDbConfiguration {
 
             #get files and log files
             $tempdbFiles = Get-DbaDatabaseFile -SqlInstance $server -Database tempdb
-            $dataFiles = $tempdbFiles | Where-Object Type -ne 1
+            [array]$dataFiles = $tempdbFiles | Where-Object Type -ne 1
             $logFiles = $tempdbFiles | Where-Object Type -eq 1
             Write-Message -Level Verbose -Message "TempDB file objects gathered"
 

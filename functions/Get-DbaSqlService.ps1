@@ -35,7 +35,7 @@ function Get-DbaSqlService {
 
     dbatools PowerShell module (https://dbatools.io)
     Copyright (C) 2016 Chrissy LeMaire
-    License: GNU GPL v3 https://opensource.org/licenses/GPL-3.0
+    License: MIT https://opensource.org/licenses/MIT
 
     .LINK
     https://dbatools.io/Get-DbaSqlService
@@ -130,8 +130,8 @@ function Get-DbaSqlService {
     PROCESS {
         foreach ($Computer in $ComputerName.ComputerName) {
             $Server = Resolve-DbaNetworkName -ComputerName $Computer -Credential $credential
-            if ($Server.ComputerName) {
-                $Computer = $server.ComputerName
+            if ($Server.FullComputerName) {
+                $Computer = $server.FullComputerName
                 Write-Message -Level VeryVerbose -Message "Getting SQL Server namespace on $Computer" -Target $Computer
                 try { $namespaces = Get-DbaCmObject -ComputerName $Computer -NameSpace root\Microsoft\SQLServer -Query "Select Name FROM __NAMESPACE WHERE Name Like 'ComputerManagement%'" -EnableException -Credential $credential | Sort-Object Name -Descending }
                 catch { }

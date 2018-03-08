@@ -81,7 +81,7 @@ function Remove-DbaDatabaseSafely {
 
             Website: https://dbatools.io
             Copyright: (C) Chrissy LeMaire, clemaire@gmail.com
-            License: GNU GPL v3 https://opensource.org/licenses/GPL-3.0
+            License: MIT https://opensource.org/licenses/MIT
 
         .LINK
             https://dbatools.io/Remove-DbaDatabaseSafely
@@ -610,8 +610,7 @@ function Remove-DbaDatabaseSafely {
             if ($Pscmdlet.ShouldProcess($destination, "Dropping Database $dbname on $sourceserver")) {
                 ## Drop the database
                 try {
-                    # Remove-SqlDatabase is a function in SharedFunctions.ps1 that tries 3 different ways to drop a database
-                    Remove-SqlDatabase -SqlInstance $sourceserver -DbName $dbname
+                    $null = Remove-DbaDatabase -SqlInstance $sourceserver -Database $dbname -Confirm:$false
                     Write-Message -Level Verbose -Message "Dropped $dbname Database on $source prior to running the Agent Job"
                 }
                 catch {
@@ -654,7 +653,7 @@ function Remove-DbaDatabaseSafely {
 
             $refreshRetries = 1
 
-            while (($destserver.databases[$dbname] -eq $null) -and $refreshRetries -lt 6) {
+            while ($null -eq ($destserver.databases[$dbname]) -and $refreshRetries -lt 6) {
                 Write-Message -Level verbose -Message "Database $dbname not found! Refreshing collection."
 
                 #refresh database list, otherwise the next step (DBCC) can fail
@@ -675,7 +674,7 @@ function Remove-DbaDatabaseSafely {
             if ($Pscmdlet.ShouldProcess($dbname, "Dropping Database $dbname on $destination")) {
                 ## Drop the database
                 try {
-                    $null = Remove-SqlDatabase -SqlInstance $sourceserver -DbName $dbname
+                    $null = Remove-DbaDatabase -SqlInstance $sourceserver -Database $dbname -Confirm:$false
                     Write-Message -Level Verbose -Message "Dropped $dbname database on $destination."
                 }
                 catch {

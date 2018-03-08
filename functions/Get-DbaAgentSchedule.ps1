@@ -7,11 +7,13 @@ function Get-DbaAgentSchedule {
             This function returns SQL Agent Shared Schedules.
 
         .PARAMETER SqlInstance
-            SqlInstance name or SMO object representing the SQL Server to connect to.
-            This can be a collection and receive pipeline input.
+            SQL Server name or SMO object representing the SQL Server to connect to. This can be a collection and receive pipeline input to allow the function to be executed against multiple SQL Server instances.
 
         .PARAMETER SqlCredential
             PSCredential object to connect as. If not specified, current Windows login will be used.
+
+        .PARAMETER Schedule
+            Parameter to filter the schedules returned
 
         .PARAMETER EnableException
             By default, when something goes wrong we try to catch it, interpret it and give you a friendly warning message.
@@ -24,7 +26,7 @@ function Get-DbaAgentSchedule {
 
             Website: https://dbatools.io
             Copyright: (C) Chrissy LeMaire, clemaire@gmail.com
-            License: GNU GPL v3 https://opensource.org/licenses/GPL-3.0
+            License: MIT https://opensource.org/licenses/MIT
 
         .LINK
             https://dbatools.io/Get-DbaAgentSchedule
@@ -44,13 +46,15 @@ function Get-DbaAgentSchedule {
         [parameter(Position = 0, Mandatory = $true, ValueFromPipeline = $True)]
         [Alias("ServerInstance", "Instance", "SqlServer")]
         [DbaInstanceParameter[]]$SqlInstance,
+        [Alias("Schedules")]
+        [object[]]$Schedule,
         [PSCredential]$SqlCredential,
-        [switch][Alias('Silent')]$EnableException
+        [Alias('Silent')]
+        [switch]$EnableException
     )
 
     begin {
         function Get-ScheduleDescription {
-            [CmdletBinding()]
             param (
                 [Parameter(Mandatory = $true)]
                 [ValidateNotNullOrEmpty()]
@@ -237,18 +241,27 @@ function Get-DbaAgentSchedule {
                 Stop-Function -Message "$($server.Edition) does not support SQL Server Agent. Skipping $server." -Continue
             }
 
-            $defaults = "ComputerName", "InstanceName", "SqlInstance", "Name as ScheduleName", "ActiveEndDate", "ActiveEndTimeOfDay", "ActiveStartDate", "ActiveStartTimeOfDay", "DateCreated", "FrequencyInterval", "FrequencyRecurrenceFactor", "FrequencyRelativeIntervals", "FrequencySubDayInterval", "FrequencySubDayTypes", "FrequencyTypes", "IsEnabled", "JobCount", "Description"
-
-            foreach ($schedule in $server.JobServer.SharedSchedules) {
-                $description = Get-ScheduleDescription -Schedule $schedule
-
-                Add-Member -Force -InputObject $schedule -MemberType NoteProperty ComputerName -value $server.NetName
-                Add-Member -Force -InputObject $schedule -MemberType NoteProperty InstanceName -value $server.ServiceName
-                Add-Member -Force -InputObject $schedule -MemberType NoteProperty SqlInstance -value $server.DomainInstanceName
-                Add-Member -Force -InputObject $schedule -MemberType NoteProperty Description -Value $description
-
-                Select-DefaultView -InputObject $schedule -Property $defaults
+            if ($Schedule) {
+                $scheduleCollection = $server.JobServer.SharedSchedules | Where-Object { $_.Name -in $Schedule }
             }
+            else {
+                $scheduleCollection = $server.JobServer.SharedSchedules
+            }
+
         }
+
+        $defaults = "ComputerName", "InstanceName", "SqlInstance", "Name as ScheduleName", "ActiveEndDate", "ActiveEndTimeOfDay", "ActiveStartDate", "ActiveStartTimeOfDay", "DateCreated", "FrequencyInterval", "FrequencyRecurrenceFactor", "FrequencyRelativeIntervals", "FrequencySubDayInterval", "FrequencySubDayTypes", "FrequencyTypes", "IsEnabled", "JobCount", "Description"
+
+        foreach ($schedule in $scheduleCollection) {
+            $description = Get-ScheduleDescription -Schedule $schedule
+
+            Add-Member -Force -InputObject $schedule -MemberType NoteProperty ComputerName -value $server.NetName
+            Add-Member -Force -InputObject $schedule -MemberType NoteProperty InstanceName -value $server.ServiceName
+            Add-Member -Force -InputObject $schedule -MemberType NoteProperty SqlInstance -value $server.DomainInstanceName
+            Add-Member -Force -InputObject $schedule -MemberType NoteProperty Description -Value $description
+
+            Select-DefaultView -InputObject $schedule -Property $defaults
+        }
+
     }
 }

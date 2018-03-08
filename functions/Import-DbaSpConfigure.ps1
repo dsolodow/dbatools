@@ -60,7 +60,7 @@ function Import-DbaSpConfigure {
             dbatools PowerShell module (https://dbatools.io, clemaire@gmail.com)
             Website: https://dbatools.io
             Copyright: (C) Chrissy LeMaire, clemaire@gmail.com
-            License: GNU GPL v3 https://opensource.org/licenses/GPL-3.0
+            License: MIT https://opensource.org/licenses/MIT
 
         .EXAMPLE
             Import-DbaSpConfigure sqlserver sqlcluster $SourceSqlCredential $DestinationSqlCredential
@@ -139,7 +139,7 @@ function Import-DbaSpConfigure {
                     $displayname = $sourceprop.DisplayName
 
                     $destprop = $destprops | where-object { $_.Displayname -eq $displayname }
-                    if ($destprop -ne $null) {
+                    if ($null -ne $destprop) {
                         try {
                             $destprop.configvalue = $sourceprop.configvalue
                             $destserver.Query("RECONFIGURE WITH OVERRIDE") | Out-Null

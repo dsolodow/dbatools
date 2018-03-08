@@ -56,7 +56,7 @@ function Publish-DbaDacpac {
 
             Website: https://dbatools.io
             Copyright: (C) Chrissy LeMaire, clemaire@gmail.com
-            License: GNU GPL v3 https://opensource.org/licenses/GPL-3.0
+            License: MIT https://opensource.org/licenses/MIT
 
         .LINK
             https://dbatools.io/Publish-DbaDacpac
@@ -221,13 +221,10 @@ function Publish-DbaDacpac {
                     }
                 }
                 catch [Microsoft.SqlServer.Dac.DacServicesException] {
-                    $message = ("Deployment failed: {0} `n Reason: {1}" -f $_.Exception.Message, $_.Exception.InnerException.Message)
+                        Stop-Function -Message "Deployment failed" -ErrorRecord $_ -EnableException $true
                 }
                 finally {
                     Unregister-Event -SourceIdentifier "msg"
-                    if ($message) {
-                        Stop-Function -Message $message
-                    }
                     if ($GenerateDeploymentReport) {
                         $result.DeploymentReport | Out-File $DeploymentReport
                         Write-Message -Level Verbose -Message "Deployment Report - $DeploymentReport."

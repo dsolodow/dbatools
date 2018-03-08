@@ -99,7 +99,7 @@ function Backup-DbaDatabase {
 
                 Website: https://dbatools.io
                 Copyright: (C) Chrissy LeMaire, clemaire@gmail.com
-                License: GNU GPL v3 https://opensource.org/licenses/GPL-3.0
+                License: MIT https://opensource.org/licenses/MIT
 
             .EXAMPLE
                 Backup-DbaDatabase -SqlInstance Server1 -Database HR, Finance
@@ -485,6 +485,15 @@ function Backup-DbaDatabase {
                                 $Verified = $false
                             }
                         }
+                        $HeaderInfo | Add-Member -Type NoteProperty -Name BackupComplete -Value $BackupComplete
+                        $HeaderInfo | Add-Member -Type NoteProperty -Name BackupFile -Value (Split-Path $FinalBackupPath -leaf)
+                        $HeaderInfo | Add-Member -Type NoteProperty -Name BackupFilesCount -Value $FinalBackupPath.count
+                        $HeaderInfo | Add-Member -Type NoteProperty -Name BackupFolder -Value (Split-Path $FinalBackupPath | Sort-Object -Unique)
+                        $HeaderInfo | Add-Member -Type NoteProperty -Name BackupPath -Value ($FinalBackupPath | Sort-Object -Unique)
+                        $HeaderInfo | Add-Member -Type NoteProperty -Name DatabaseName -Value $dbname
+                        $HeaderInfo | Add-Member -Type NoteProperty -Name Notes -Value ($failures -join (','))
+                        $HeaderInfo | Add-Member -Type NoteProperty -Name Script -Value $script
+                        $HeaderInfo | Add-Member -Type NoteProperty -Name Verified -Value $Verified
                     }
                 }
                 catch {
@@ -502,17 +511,6 @@ function Backup-DbaDatabase {
             if ($failures.count -eq 0) {
                 $OutputExclude += ('Notes', 'FirstLsn', 'DatabaseBackupLsn', 'CheckpointLsn', 'LastLsn', 'BackupSetId', 'LastRecoveryForkGuid')
             }
-
-            $HeaderInfo | Add-Member -Type NoteProperty -Name BackupComplete -Value $BackupComplete
-            $HeaderInfo | Add-Member -Type NoteProperty -Name BackupFile -Value (Split-Path $FinalBackupPath -leaf)
-            $HeaderInfo | Add-Member -Type NoteProperty -Name BackupFilesCount -Value $FinalBackupPath.count
-            $HeaderInfo | Add-Member -Type NoteProperty -Name BackupFolder -Value (Split-Path $FinalBackupPath | Sort-Object -Unique)
-            $HeaderInfo | Add-Member -Type NoteProperty -Name BackupPath -Value ($FinalBackupPath | Sort-Object -Unique)
-            $HeaderInfo | Add-Member -Type NoteProperty -Name DatabaseName -Value $dbname
-            $HeaderInfo | Add-Member -Type NoteProperty -Name Notes -Value ($failures -join (','))
-            $HeaderInfo | Add-Member -Type NoteProperty -Name Script -Value $script
-            $HeaderInfo | Add-Member -Type NoteProperty -Name Verified -Value $Verified
-
             $headerinfo | Select-DefaultView -ExcludeProperty $OutputExclude
             $BackupFileName = $null
         }

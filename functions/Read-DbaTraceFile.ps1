@@ -1,7 +1,7 @@
 function Read-DbaTraceFile {
     <#
         .SYNOPSIS
-        Reads a trace file from specied SQL Server Database
+        Reads a trace file from specified SQL Server Database
 
         .DESCRIPTION
         Using the fn_trace_gettable function, a trace file is read and returned as a PowerShell object
@@ -12,7 +12,7 @@ function Read-DbaTraceFile {
         A SQL Server instance to connect to
 
         .PARAMETER SqlCredential
-        A credential to use to conect to the SQL instance rather than using Windows Authentication
+        A credential to use to connect to the SQL instance rather than using Windows Authentication
 
         .PARAMETER Path
         Path to the trace file. This path is relative to the SQL Server instance.
@@ -126,7 +126,7 @@ function Read-DbaTraceFile {
         Tags: Security, Trace
         Website: https://dbatools.io
         Copyright: (C) Chrissy LeMaire, clemaire@gmail.com
-        License: GNU GPL v3 https://opensource.org/licenses/GPL-3.0
+        License: MIT https://opensource.org/licenses/MIT
 
         .EXAMPLE
         Read-DbaTraceFile -SqlInstance sql2016 -Database master, tempdb -Path C:\traces\big.trc
@@ -145,13 +145,20 @@ function Read-DbaTraceFile {
         Reads the tracefile C:\traces\big.trc, stored on the sql2016 sql server.
         Filters only results where LinkServerName = myls and StartTime is greater than '5/30/2017 4:27:52 PM'.
 
+        .EXAMPLE
+        Get-DbaTrace -SqlInstance sql2014 | Read-DbaTraceFile
+
+        Reads every trace file on sql2014
+
 #>
     [CmdletBinding()]
     Param (
-        [parameter(Position = 0, Mandatory, ValueFromPipeline)]
+        [parameter(Position = 0, Mandatory, ValueFromPipelineByPropertyName)]
         [Alias("ServerInstance", "SqlServer")]
         [DbaInstanceParameter[]]$SqlInstance,
+        [parameter(ValueFromPipelineByPropertyName)]
         [PSCredential]$SqlCredential,
+        [parameter(ValueFromPipelineByPropertyName)]
         [string[]]$Path,
         [string[]]$Database,
         [string[]]$Login,

@@ -1,7 +1,7 @@
 function Test-DbaLogShippingStatus {
     <#
     .SYNOPSIS
-    Get-DbaLogShippingStatus returns the status of your log shipping databases
+    Test-DbaLogShippingStatus returns the status of your log shipping databases
 
     .DESCRIPTION
     Most of the time your log shipping "just works".
@@ -49,7 +49,7 @@ function Test-DbaLogShippingStatus {
 
     Website: https://dbatools.io
     Copyright: (C) Chrissy LeMaire, clemaire@gmail.com
-    License: GNU GPL v3 https://opensource.org/licenses/GPL-3.0
+    License: MIT https://opensource.org/licenses/MIT
 
     .LINK
     https://dbatools.io/Test-DbaLogShippingStatus
@@ -101,58 +101,59 @@ function Test-DbaLogShippingStatus {
         $collection = New-Object System.Collections.ArrayList
 
         # Setup the query
-        [string[]]$query = "IF ( OBJECT_ID('tempdb..#logshippingstatus') ) IS NOT NULL
-                BEGIN
-                    DROP TABLE #logshippingstatus;
-                END;
+        [string[]]$query = "
+IF ( OBJECT_ID('tempdb..#logshippingstatus') ) IS NOT NULL
+BEGIN
+DROP TABLE #logshippingstatus;
+END;
 
-            CREATE TABLE #logshippingstatus
-            (
-              Status BIT ,
-              IsPrimary BIT ,
-              Server VARCHAR(100) ,
-              DatabaseName VARCHAR(100) ,
-              TimeSinceLastBackup INT ,
-              LastBackupFile VARCHAR(255) ,
-              BackupThresshold INT ,
-              IsBackupAlertEnabled BIT ,
-              TimeSinceLastCopy INT ,
-              LastCopiedFile VARCHAR(255) ,
-              TimeSinceLastRestore INT ,
-              LastRestoredFile VARCHAR(255) ,
-              LastRestoredLatency INT ,
-              RestoreThresshold INT ,
-              IsRestoreAlertEnabled BIT
-            );
+CREATE TABLE #logshippingstatus
+(
+    Status BIT ,
+    IsPrimary BIT ,
+    Server VARCHAR(100) ,
+    DatabaseName VARCHAR(100) ,
+    TimeSinceLastBackup INT ,
+    LastBackupFile VARCHAR(255) ,
+    BackupThresshold INT ,
+    IsBackupAlertEnabled BIT ,
+    TimeSinceLastCopy INT ,
+    LastCopiedFile VARCHAR(255) ,
+    TimeSinceLastRestore INT ,
+    LastRestoredFile VARCHAR(255) ,
+    LastRestoredLatency INT ,
+    RestoreThresshold INT ,
+    IsRestoreAlertEnabled BIT
+);
 
-            INSERT	INTO #logshippingstatus
-                    (   Status ,
-                    IsPrimary ,
-                    Server ,
-                    DatabaseName ,
-                    TimeSinceLastBackup ,
-                    LastBackupFile ,
-                    BackupThresshold ,
-                    IsBackupAlertEnabled ,
-                    TimeSinceLastCopy ,
-                    LastCopiedFile ,
-                    TimeSinceLastRestore ,
-                    LastRestoredFile ,
-                    LastRestoredLatency ,
-                    RestoreThresshold ,
-                    IsRestoreAlertEnabled
-                    )
-                    EXEC master.sys.sp_help_log_shipping_monitor"
+INSERT INTO #logshippingstatus
+(   Status ,
+    IsPrimary ,
+    Server ,
+    DatabaseName ,
+    TimeSinceLastBackup ,
+    LastBackupFile ,
+    BackupThresshold ,
+    IsBackupAlertEnabled ,
+    TimeSinceLastCopy ,
+    LastCopiedFile ,
+    TimeSinceLastRestore ,
+    LastRestoredFile ,
+    LastRestoredLatency ,
+    RestoreThresshold ,
+    IsRestoreAlertEnabled
+)
+EXEC master.sys.sp_help_log_shipping_monitor"
 
         $select = "SELECT * FROM #logshippingstatus"
 
         if ($Database -or $ExcludeDatabase) {
 
             if ($database) {
-                $where += "DatabaseName IN ('$($Database -join ',')')"
+                $where += "DatabaseName IN ('$($Database -join ''',''')')"
             }
             elseif ($ExcludeDatabase) {
-                $where += "DatabaseName NOTIN ('$($ExcludeDatabase -join ',')')"
+                $where += "DatabaseName NOT IN ('$($ExcludeDatabase -join ''',''')')"
             }
 
             $select = "$select WHERE $where"
@@ -208,53 +209,59 @@ function Test-DbaLogShippingStatus {
                 # Setup a variable to hold the errors
                 $statusDetails = @()
 
-                # Check the status of the row is true whih indicates that something is wrong
-                if ($result.Status) {
-                    # Check if the row is part of the primary or secondary instance
-                    if ($result.IsPrimary) {
-                        # Check the backup
-                        if (-not $result.TimeSinceLastBackup) {
-                            $statusDetails += "The backup has never been executed."
+                # Check if there are any results that need to be returned
+                if ($result.Status -notin 0, 1) {
+                    $statusDetails += "N/A"
+                }
+                else {
+                    # Check the status of the row is true which indicates that something is wrong
+                    if ($result.Status) {
+                        # Check if the row is part of the primary or secondary instance
+                        if ($result.IsPrimary) {
+                            # Check the backup
+                            if (-not $result.TimeSinceLastBackup) {
+                                $statusDetails += "The backup has never been executed."
+                            }
+                            elseif ($result.TimeSinceLastBackup -ge $result.BackupThresshold) {
+                                $statusDetails += "The backup has not been executed in the last $($result.BackupThresshold) minutes"
+                            }
                         }
-                        elseif ($result.TimeSinceLastBackup -ge $result.BackupThresshold) {
-                            $statusDetails += "The backup has not been executed in the last $($result.BackupThresshold) minutes"
+                        elseif (-not $result.IsPrimary) {
+                            # Check the restore
+                            if ($null -eq $result.TimeSinceLastRestore) {
+                                $statusDetails += "The restore has never been executed."
+                            }
+                            elseif ($result.TimeSinceLastRestore -ge $result.RestoreThresshold) {
+                                $statusDetails += "The restore has not been executed in the last $($result.RestoreThresshold) minutes"
+                            }
                         }
                     }
-                    elseif (-not $result.IsPrimary) {
-                        # Check the restore
-                        if ($result.TimeSinceLastRestore -eq $null) {
-                            $statusDetails += "The restore has never been executed."
-                        }
-                        elseif ($result.TimeSinceLastRestore -ge $result.RestoreThresshold) {
-                            $statusDetails += "The restore has not been executed in the last $($result.RestoreThresshold) minutes"
-                        }
+                    else {
+                        $statusDetails += "All OK"
                     }
-                }
-                else {
-                    $statusDetails += "All OK"
-                }
 
 
-                # Check the time for the backup, copy and restore
-                if ($result.TimeSinceLastBackup -eq [DBNull]::Value) {
-                    $lastBackup = "N/A"
-                }
-                else {
-                    $lastBackup = (Get-Date).AddMinutes( - $result.TimeSinceLastBackup)
-                }
+                    # Check the time for the backup, copy and restore
+                    if ($result.TimeSinceLastBackup -eq [DBNull]::Value) {
+                        $lastBackup = "N/A"
+                    }
+                    else {
+                        $lastBackup = (Get-Date).AddMinutes( - $result.TimeSinceLastBackup)
+                    }
 
-                if ($result.TimeSinceLastCopy -eq [DBNull]::Value) {
-                    $lastCopy = "N/A"
-                }
-                else {
-                    $lastCopy = (Get-Date).AddMinutes( - $result.TimeSinceLastCopy)
-                }
+                    if ($result.TimeSinceLastCopy -eq [DBNull]::Value) {
+                        $lastCopy = "N/A"
+                    }
+                    else {
+                        $lastCopy = (Get-Date).AddMinutes( - $result.TimeSinceLastCopy)
+                    }
 
-                if ($result.TimeSinceLastRestore -eq [DBNull]::Value) {
-                    $lastRestore = "N/A"
-                }
-                else {
-                    $lastRestore = (Get-Date).AddMinutes( - $result.TimeSinceLastRestore)
+                    if ($result.TimeSinceLastRestore -eq [DBNull]::Value) {
+                        $lastRestore = "N/A"
+                    }
+                    else {
+                        $lastRestore = (Get-Date).AddMinutes( - $result.TimeSinceLastRestore)
+                    }
                 }
 
                 # Set up the custom object

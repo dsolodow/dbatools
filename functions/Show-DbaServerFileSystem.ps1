@@ -12,7 +12,7 @@ function Show-DbaServerFileSystem {
             The SQL Server whose filesystem you want to view.
 
         .PARAMETER SqlCredential
-             Allows you to login to servers using SQL Logins instead of Windows Authentication (AKA Integrated or Trusted). To use:
+            Allows you to login to servers using SQL Logins instead of Windows Authentication (AKA Integrated or Trusted). To use:
 
             $cred = Get-Credential, then pass $cred object to the -SqlCredential parameter.
 
@@ -30,7 +30,7 @@ function Show-DbaServerFileSystem {
             Tags: Storage
             Website: https://dbatools.io
             Copyright: (C) Chrissy LeMaire, clemaire@gmail.com
-            License: GNU GPL v3 https://opensource.org/licenses/GPL-3.0
+            License: MIT https://opensource.org/licenses/MIT
 
         .LINK
             https://dbatools.io/Show-DbaServerFileSystem

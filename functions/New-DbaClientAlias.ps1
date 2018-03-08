@@ -31,7 +31,7 @@ function New-DbaClientAlias {
 
     Website: https://dbatools.io
     Copyright: (C) Chrissy LeMaire, clemaire@gmail.com
-    License: GNU GPL v3 https://opensource.org/licenses/GPL-3.0
+    License: MIT https://opensource.org/licenses/MIT
 
     .LINK
     https://dbatools.io/New-DbaClientAlias
@@ -39,6 +39,11 @@ function New-DbaClientAlias {
     .EXAMPLE
     New-DbaClientAlias -ServerName sqlcluster\sharepoint -Alias sp
     Creates a new TCP alias on the local workstation called sp, which points sqlcluster\sharepoint
+
+
+    .EXAMPLE
+    New-DbaClientAlias -ServerName 'sqlcluster,14443' -Alias spinstance
+    Creates a new TCP alias on the local workstation called spinstance, which points to sqlcluster, port 14443.
 
     .EXAMPLE
     New-DbaClientAlias -ServerName sqlcluster\sharepoint -Alias sp -Protocol NamedPipes

@@ -46,7 +46,7 @@ Returns a ton of raw information about the execution plans
 Tags: Performance
 dbatools PowerShell module (https://dbatools.io, clemaire@gmail.com)
 Copyright (C) 2016 Chrissy LeMaire
-License: GNU GPL v3 https://opensource.org/licenses/GPL-3.0
+License: MIT https://opensource.org/licenses/MIT
 
 .LINK
 https://dbatools.io/Get-DbaExecutionPlan
@@ -142,12 +142,12 @@ Gets super detailed information for execution plans on only for AdventureWorks20
                     $wherearray += " DB_NAME(deqp.dbid) in ('$dblist') "
                 }
 
-                if ($SinceCreation -ne $null) {
+                if ($null -ne $SinceCreation) {
                     Write-Message -Level Verbose -Message "Adding creation time"
                     $wherearray += " creation_time >= '$SinceCreation' "
                 }
 
-                if ($SinceLastExecution -ne $null) {
+                if ($null -ne $SinceLastExecution) {
                     Write-Message -Level Verbose -Message "Adding last exectuion time"
                     $wherearray += " last_execution_time >= '$SinceLastExecution' "
                 }

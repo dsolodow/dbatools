@@ -305,7 +305,7 @@ function Copy-DbaLinkedServer {
                 if ($destServer.Settings.OleDbProviderSettings.Name.Length -ne 0) {
                     if (!$destServer.Settings.OleDbProviderSettings.Name -contains $provider -and !$provider.StartsWith("SQLN")) {
                         $copyLinkedServer.Status = "Skipped"
-                        $copyLinkedServer.Notes = "Already exists"
+                        $copyLinkedServer.Notes = "Missing provider"
                         $copyLinkedServer | Select-DefaultView -Property DateTime, SourceServer, DestinationServer, Name, Type, Status, Notes -TypeName MigrationObject
 
                         Write-Message -Level Verbose -Message "$($destServer.Name) does not support the $provider provider. Skipping $linkedServerName."
@@ -313,7 +313,7 @@ function Copy-DbaLinkedServer {
                     }
                 }
 
-                if ($destServer.LinkedServers[$linkedServerName] -ne $null) {
+                if ($null -ne $destServer.LinkedServers[$linkedServerName]) {
                     if (!$force) {
                         $copyLinkedServer.Status = "Skipped"
                         $copyLinkedServer | Select-DefaultView -Property DateTime, SourceServer, DestinationServer, Name, Type, Status, Notes -TypeName MigrationObject
@@ -341,9 +341,11 @@ function Copy-DbaLinkedServer {
                         Write-Message -Level Debug -Message $sql
 
                         if ($UpgradeSqlClient -and $sql -match "sqlncli") {
-                            $newstring = "sqlncli$($destServer.VersionMajor)"
-                            Write-Message -Level Verbose -Message "Changing sqlncli to $newstring"
-                            $sql = $sql -replace ("sqlncli[0-9]+", $newstring)
+                            $destProviders = $destServer.Settings.OleDbProviderSettings | Where-Object { $_.Name -like 'SQLNCLI*' }
+                            $newProvider = $destProviders | Sort-Object Name -Descending | Select-Object -First 1 -ExpandProperty Name
+
+                            Write-Message -Level Verbose -Message "Changing sqlncli to $newProvider"
+                            $sql = $sql -replace ("sqlncli[0-9]+", $newProvider)
                         }
 
                         $destServer.Query($sql)
@@ -395,7 +397,7 @@ function Copy-DbaLinkedServer {
     }
     process {
         if (Test-FunctionInterrupt) { return }
-        if ($SourceSqlCredential.username -ne $null) {
+        if ($null -ne $SourceSqlCredential.username) {
             Write-Message -Level Verbose -Message "You are using a SQL Credential. Note that this script requires Windows Administrator access on the source server. Attempting with $($SourceSqlCredential.Username)."
         }
 

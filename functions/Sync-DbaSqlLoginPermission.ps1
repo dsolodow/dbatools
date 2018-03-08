@@ -55,7 +55,7 @@ function Sync-DbaSqlLoginPermission {
 
             Website: https://dbatools.io
             Copyright: (C) Chrissy LeMaire, clemaire@gmail.com
-            License: GNU GPL v3 https://opensource.org/licenses/GPL-3.0
+            License: MIT https://opensource.org/licenses/MIT
 
         .LINK
             https://dbatools.io/Sync-DbaSqlLoginPermission
@@ -118,7 +118,7 @@ function Sync-DbaSqlLoginPermission {
                     continue
                 }
 
-                if ($Logins -ne $null -and $Logins -notcontains $username) {
+                if ($null -ne $Logins -and $Logins -notcontains $username) {
                     continue
                 }
 
@@ -131,7 +131,7 @@ function Sync-DbaSqlLoginPermission {
                 if ($serverName -eq $userBase -or $username.StartsWith("NT ")) {
                     continue
                 }
-                if (($destLogin = $destServer.Logins.Item($username)) -eq $null) {
+                if ($null -eq ($destLogin = $destServer.Logins.Item($username))) {
                     continue
                 }
 

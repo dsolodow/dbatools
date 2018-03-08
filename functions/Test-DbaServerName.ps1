@@ -40,7 +40,7 @@ function Test-DbaServerName {
 
             dbatools PowerShell module (https://dbatools.io, clemaire@gmail.com)
             Copyright (C) 2016 Chrissy LeMaire
-            License: GNU GPL v3 https://opensource.org/licenses/GPL-3.0
+            License: MIT https://opensource.org/licenses/MIT
 
         .LINK
             https://dbatools.io/Test-DbaServerName
@@ -136,7 +136,7 @@ function Test-DbaServerName {
                 }
             }
 
-            if ($rs -ne $null -or $rs.Count -gt 0) {
+            if ($null -ne $rs -or $rs.Count -gt 0) {
                 if ($rs.State -eq 'Running') {
                     $rstext = "$ssrsService must be stopped and updated."
                 }

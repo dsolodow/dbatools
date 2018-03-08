@@ -53,7 +53,7 @@ function Set-DbaMaxDop {
             Author: Claudio Silva (@claudioessilva)
             Website: https://dbatools.io
             Copyright: (C) Chrissy LeMaire, clemaire@gmail.com
-            License: GNU GPL v3 https://opensource.org/licenses/GPL-3.0
+            License: MIT https://opensource.org/licenses/MIT
 
         .LINK
             https://dbatools.io/Set-DbaMaxDop
@@ -121,7 +121,7 @@ function Set-DbaMaxDop {
         if ((Test-Bound -Not -Parameter Collection)) {
             $collection = Test-DbaMaxDop -SqlInstance $sqlinstance -SqlCredential $SqlCredential -Verbose:$false
         }
-        elseif ($collection.SqlInstance -eq $null) {
+        elseif ($null -eq $collection.SqlInstance) {
             $collection = Test-DbaMaxDop -SqlInstance $sqlinstance -SqlCredential $SqlCredential -Verbose:$false
         }
 

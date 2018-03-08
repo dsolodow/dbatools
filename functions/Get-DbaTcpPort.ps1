@@ -34,7 +34,7 @@ function Get-DbaTcpPort {
 
             Website: https://dbatools.io
             Copyright: (C) Chrissy LeMaire, clemaire@gmail.com
-            License: GNU GPL v3 https://opensource.org/licenses/GPL-3.0
+            License: MIT https://opensource.org/licenses/MIT
 
         .LINK
             https://dbatools.io/Get-DbaTcpPort
@@ -174,7 +174,7 @@ function Get-DbaTcpPort {
                 $cleanedUp
             }
 
-            if ($Detailed -eq $false -or ($Detailed -eq $true -and $someIps -eq $null)) {
+            if ($Detailed -eq $false -or ($Detailed -eq $true -and $null -eq $someIps)) {
                 try {
                     $server = Connect-SqlInstance -SqlInstance "TCP:$instance" -SqlCredential $SqlCredential -MinimumVersion 9
                 }

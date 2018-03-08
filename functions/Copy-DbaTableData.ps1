@@ -103,7 +103,7 @@ function Copy-DbaTableData {
 
             Website: https://dbatools.io
             Copyright: (C) Chrissy LeMaire, clemaire@gmail.com
-            License: GNU GPL v3 https://opensource.org/licenses/GPL-3.0
+            License: MIT https://opensource.org/licenses/MIT
 
         .LINK
             https://dbatools.io/Copy-DbaTableData
@@ -114,7 +114,7 @@ function Copy-DbaTableData {
             Copies all the data from sql1 to sql2, using the database dbatools_from.
 
         .EXAMPLE
-            Copy-DbaTableData -SqlInstance sql1 -Destination sql2 -Database dbatools_from -DatabaseDest dbatools_dest -Table test_table
+            Copy-DbaTableData -SqlInstance sql1 -Destination sql2 -Database dbatools_from -DestinationDatabase dbatools_dest -Table test_table
 
             Copies all the data from sql1 to sql2, using the database dbatools_from as source and dbatools_dest as destination
 
@@ -275,7 +275,7 @@ function Copy-DbaTableData {
             }
 
             try {
-                $desttable = Get-DbaTable -SqlInstance $destServer -Table $DestinationTable -Database $Database -EnableException -Verbose:$false | Select-Object -First 1
+                $desttable = Get-DbaTable -SqlInstance $destServer -Table $DestinationTable -Database $DestinationDatabase -EnableException -Verbose:$false | Select-Object -First 1
             }
             catch {
                 Stop-Function -Message "Unable to determine destination table: $DestinationTable"
@@ -292,13 +292,13 @@ function Copy-DbaTableData {
             $fqtnfrom = "$($server.Databases[$Database]).$sqltable"
             $fqtndest = "$($destServer.Databases[$DestinationDatabase]).$desttable"
 
-            if (-not $Query) {
+            if (Test-Bound -ParameterName Query -Not) {
                 $Query = "SELECT * FROM $fqtnfrom"
             }
 
             if ($Truncate -eq $true) {
                 if ($Pscmdlet.ShouldProcess($destServer, "Truncating table $fqtndest")) {
-                    $null = $destServer.Databases[$DestinationDatabase].Query("TRUNCATE TABLE $fqtndest")
+                    $null = $destServer.Databases[$DestinationDatabase].ExecuteNonQuery("TRUNCATE TABLE $fqtndest")
                 }
             }
             $cmd = $server.ConnectionContext.SqlConnectionObject.CreateCommand()

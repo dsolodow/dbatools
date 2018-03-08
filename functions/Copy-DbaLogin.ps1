@@ -40,6 +40,9 @@ function Copy-DbaLogin {
         .PARAMETER ExcludeLogin
             The login(s) to exclude. Options for this list are auto-populated from the server.
 
+        .PARAMETER ExcludeSystemLogin
+            If this switch is enabled, NT SERVICE accounts will be skipped.
+
         .PARAMETER SyncOnly
             If this switch is enabled, only SQL Server login permissions, roles, etc. will be synced. Logins and users will not be added or dropped.  If a matching Login does not exist on the destination, the Login will be skipped.
             Credential removal is not currently supported for this parameter.
@@ -82,7 +85,7 @@ function Copy-DbaLogin {
 
             Website: https://dbatools.io
             Copyright: (C) Chrissy LeMaire, clemaire@gmail.com
-            License: GNU GPL v3 https://opensource.org/licenses/GPL-3.0
+            License: MIT https://opensource.org/licenses/MIT
 
         .LINK
             https://dbatools.io/Copy-DbaLogin
@@ -131,12 +134,13 @@ function Copy-DbaLogin {
         [DbaInstanceParameter]$Source,
         [PSCredential]
         $SourceSqlCredential,
-        [parameter(Mandatory = $true)]
+        [parameter(ParameterSetName = "Destination", Mandatory = $true)]
         [DbaInstanceParameter]$Destination,
         [PSCredential]
         $DestinationSqlCredential,
         [object[]]$Login,
         [object[]]$ExcludeLogin,
+        [switch]$ExcludeSystemLogin,
         [switch]$SyncOnly,
         [parameter(ParameterSetName = "Live")]
         [switch]$SyncSaName,
@@ -209,13 +213,22 @@ function Copy-DbaLogin {
                         continue
                     }
                     else {
+                        if ($ExcludeSystemLogin) {
+                            Write-Message -Level Verbose -Message "$userName was skipped because ExcludeSystemLogin was specified."
+
+                            $copyLoginStatus.Status = "Skipped"
+                            $copyLoginStatus.Notes = "System login"
+                            $copyLoginStatus | Select-DefaultView -Property DateTime, SourceServer, DestinationServer, Name, Type, Status, Notes -TypeName MigrationObject
+                            continue
+                        }
+
                         if ($Pscmdlet.ShouldProcess("console", "Stating local login $userName since the source and destination server reside on the same machine.")) {
                             Write-Message -Level Verbose -Message "Copying local login $userName since the source and destination server reside on the same machine."
                         }
                     }
                 }
 
-                if ($destServer.Logins.Item($userName) -ne $null -and !$force) {
+                if ($null -ne $destServer.Logins.Item($userName) -and !$force) {
                     if ($Pscmdlet.ShouldProcess("console", "Stating $userName is skipped because it exists at destination.")) {
                         Write-Message -Level Verbose -Message "$userName already exists in destination. Use -Force to drop and recreate."
                     }
@@ -226,7 +239,7 @@ function Copy-DbaLogin {
                     continue
                 }
 
-                if ($destServer.Logins.Item($userName) -ne $null -and $force) {
+                if ($null -ne $destServer.Logins.Item($userName) -and $force) {
                     if ($userName -eq $destServer.ServiceAccount) {
                         Write-Message -Level Verbose -Message "$userName is the destination service account. Skipping drop."
 
@@ -302,7 +315,7 @@ function Copy-DbaLogin {
                     Write-Message -Level Verbose -Message "Setting login language to $($sourceLogin.Language)."
                     $destLogin.Language = $sourceLogin.Language
 
-                    if ($destServer.databases[$defaultDb] -eq $null) {
+                    if ($null -eq $destServer.databases[$defaultDb]) {
                         # we end up here when the default database on source doesn't exist on dest
                         # if source login is a sysadmin, then set the default database to master
                         # if not, set it to tempdb (see #303)

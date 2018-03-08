@@ -54,7 +54,7 @@ function Set-DbaTcpPort {
 
         Website: https://dbatools.io
         Copyright: (C) Chrissy LeMaire, clemaire@gmail.com
-        License: GNU GPL v3 https://opensource.org/licenses/GPL-3.0
+        License: MIT https://opensource.org/licenses/MIT
 
     .LINK
         https://dbatools.io/Set-DbaTcpPort
@@ -104,7 +104,7 @@ function Set-DbaTcpPort {
 
             if ($server.IsClustered) {
                 Write-Message -Level Verbose -Message "Instance is clustered fetching nodes..."
-                $clusternodes = (Get-DbaClusterActiveNode -SqlInstance $server -Detailed).NodeName -join ", "
+                $clusternodes = (Get-DbaClusterNode -SqlInstance $server).ComputerName -join ", "
 
                 Write-Message -Level Output -Message "$instance is a clustered instance, portchanges will be reflected on all nodes ($clusternodes) after a failover"
             }

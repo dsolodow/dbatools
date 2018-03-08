@@ -56,7 +56,7 @@ function Test-DbaConnection {
 
             Website: https://dbatools.io
             Copyright: (C) Chrissy LeMaire, clemaire@gmail.com
-            License: GNU GPL v3 https://opensource.org/licenses/GPL-3.0
+            License: MIT https://opensource.org/licenses/MIT
     #>
     [CmdletBinding()]
     param (
@@ -69,8 +69,8 @@ function Test-DbaConnection {
     )
     process {
         foreach ($instance in $SqlInstance) {
-            # Get local enviornment
-            Write-Message -Level Verbose -Message "Getting local enivornment information"
+            # Get local environment
+            Write-Message -Level Verbose -Message "Getting local environment information"
             $localInfo = [pscustomobject]@{
                 Windows    = [environment]::OSVersion.Version.ToString()
                 PowerShell = $PSVersionTable.PSversion.ToString()

@@ -59,7 +59,7 @@ function Copy-DbaResourceGovernor {
 
             Website: https://dbatools.io
             Copyright: (C) Chrissy LeMaire, clemaire@gmail.com
-            License: GNU GPL v3 https://opensource.org/licenses/GPL-3.0
+            License: MIT https://opensource.org/licenses/MIT
 
         .LINK
             https://dbatools.io/Copy-DbaResourceGovernor
@@ -170,7 +170,7 @@ function Copy-DbaResourceGovernor {
                 DateTime          = [DbaDateTime](Get-Date)
             }
 
-            if ($destServer.ResourceGovernor.ResourcePools[$poolName] -ne $null) {
+            if ($null -ne $destServer.ResourceGovernor.ResourcePools[$poolName]) {
                 if ($force -eq $false) {
                     Write-Message -Level Verbose -Message "Pool '$poolName' was skipped because it already exists on $destination. Use -Force to drop and recreate."
 

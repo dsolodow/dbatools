@@ -80,7 +80,8 @@ function Watch-DbaDbLogin {
 
         # File with one server per line
         [string]$ServersFromFile,
-        [switch][Alias('Silent')]$EnableException
+        [Alias('Silent')]
+        [switch]$EnableException
     )
 
     process {
@@ -156,7 +157,7 @@ function Watch-DbaDbLogin {
                 ON r.session_id = s.session_id"
             Write-Message -Level Debug -Message $sql
 
-            $procs = $server.Query($sql) | Where-Object { $_.Host -ne $sourceserver.ComputerNamePhysicalNetBIOS -and ![string]::IsNullOrEmpty($_.Host) }
+            $procs = $server.Query($sql) | Where-Object { $_.Host -ne $instance.ComputerName -and ![string]::IsNullOrEmpty($_.Host) }
             $procs = $procs | Where-Object { $systemdbs -notcontains $_.Database -and $excludedPrograms -notcontains $_.Program }
 
             if ($procs.Count -gt 0) {

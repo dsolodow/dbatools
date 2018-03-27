@@ -76,7 +76,8 @@ function Get-DbaUserLevelPermission {
         [switch]$ExcludeSystemDatabase,
         [switch]$IncludePublicGuest,
         [switch]$IncludeSystemObjects,
-        [switch][Alias('Silent')]$EnableException
+        [Alias('Silent')]
+        [switch]$EnableException
     )
 
     BEGIN {
@@ -204,6 +205,9 @@ function Get-DbaUserLevelPermission {
             if ($ExcludeSystemDatabase) {
                 $dbs = $dbs | Where-Object IsSystemObject -eq $false
             }
+
+            #reset $serverDT
+            $serverDT = $null
 
             foreach ($db in $dbs) {
                 Write-Message -Level Verbose -Message "Processing $db on $instance"

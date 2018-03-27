@@ -101,7 +101,8 @@ function Remove-DbaDbUser {
         [parameter(ParameterSetName = 'Object')]
         [switch]$Force,
 
-        [switch][Alias('Silent')]$EnableException
+        [Alias('Silent')]
+        [switch]$EnableException
     )
 
     begin {
@@ -228,7 +229,7 @@ function Remove-DbaDbUser {
 
                 foreach ($db in $databases) {
                     Write-Message -Level Verbose -Message "Get users in Database $db on target $server"
-                    $users = Get-DbaDatabaseUser -SqlInstance $instance -SqlCredential $SqlCredential -Database $db.Name
+                    $users = Get-DbaDatabaseUser -SqlInstance $server -Database $db.Name
                     $users = $users | Where-Object Name -In $User
                     Remove-DbUser $users
                 }

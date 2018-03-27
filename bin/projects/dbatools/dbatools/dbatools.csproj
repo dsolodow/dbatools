@@ -87,6 +87,13 @@
     <Compile Include="dbaSystem\StartTimeEntry.cs" />
     <Compile Include="dbaSystem\StartTimeResult.cs" />
     <Compile Include="dbaSystem\SystemHost.cs" />
+    <Compile Include="Discovery\DbaBrowserReply.cs" />
+    <Compile Include="Discovery\DbaInstanceAvailability.cs" />
+    <Compile Include="Discovery\DbaInstanceConfidenceLevel.cs" />
+    <Compile Include="Discovery\DbaInstanceReport.cs" />
+    <Compile Include="Discovery\DbaInstanceDiscoveryType.cs" />
+    <Compile Include="Discovery\DbaInstanceScanType.cs" />
+    <Compile Include="Discovery\DbaPortReport.cs" />
     <Compile Include="Exceptions\BloodyHellGiveMeSomethingToWorkWithException.cs" />
     <Compile Include="Maintenance\MaintenanceHost.cs" />
     <Compile Include="Maintenance\MaintenancePriority.cs" />
@@ -100,6 +107,7 @@
     <Compile Include="TabExpansion\TabCompletionSet.cs" />
     <Compile Include="TypeConversion\DbaCredentialParameterConverter.cs" />
     <Compile Include="Utility\CredentialPrompt.cs" />
+    <Compile Include="Utility\SizeStyle.cs" />
     <Compile Include="Validation\LinkedServerResult.cs" />
     <Compile Include="Utility\DateTimeExtension.cs" />
     <Compile Include="Utility\DbaDate.cs" />

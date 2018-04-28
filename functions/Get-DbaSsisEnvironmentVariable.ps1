@@ -14,7 +14,7 @@ This can be a collection and receive pipeline input to allow the function
 to be executed against multiple SQL Server instances.
 
 .PARAMETER SqlCredential
-SqlCredential object to connect as. If not specified, current Windows login will be used.
+Login to the target instance using alternative credentials. Windows and SQL Authentication supported. Accepts credential objects (Get-Credential)
 
 .PARAMETER Environment
 The SSIS Environments names that we want to get variables from
@@ -109,7 +109,8 @@ License: MIT https://opensource.org/licenses/MIT
         [object[]]$Folder,
         [parameter(Mandatory = $false)]
         [object[]]$FolderExclude,
-        [switch][Alias('Silent')]$EnableException
+        [Alias('Silent')]
+        [switch]$EnableException
     )
 
     process {

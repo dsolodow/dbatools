@@ -5,19 +5,13 @@ function Measure-DbaDiskSpaceRequirement {
 
         .DESCRIPTION
             Returns a file list from source and destination where source file may overwrite destination. Complex scenarios where a new file may exist is taken into account.
-            This command will accept an hash object in pipeline with the following keys: Source, SourceDatabase, Destination. Using this command will provide a way to prepare before a complex migration with multiple databases from different sources and destinations.
+            This command will accept a hash object in pipeline with the following keys: Source, SourceDatabase, Destination. Using this command will provide a way to prepare before a complex migration with multiple databases from different sources and destinations.
 
         .PARAMETER Source
             Source SQL Server.
 
         .PARAMETER SourceSqlCredential
-            Allows you to login to servers using SQL Logins instead of Windows Authentication (AKA Integrated or Trusted). To use:
-
-            $scred = Get-Credential, then pass $scred object to the -SourceSqlCredential parameter.
-
-            Windows Authentication will be used if SourceSqlCredential is not specified. SQL Server does not accept Windows credentials being passed as credentials.
-
-            To connect as a different Windows user, run PowerShell as that user.
+            Login to the target instance using alternative credentials. Windows and SQL Authentication supported. Accepts credential objects (Get-Credential)
 
         .PARAMETER Database
             The database to copy. It MUST exist.
@@ -26,13 +20,7 @@ function Measure-DbaDiskSpaceRequirement {
             Destination SQL Server instance.
 
         .PARAMETER DestinationSqlCredential
-            Allows you to login to servers using SQL Logins instead of Windows Authentication (AKA Integrated or Trusted). To use:
-
-            $dcred = Get-Credential, then pass this $dcred to the -DestinationSqlCredential parameter.
-
-            Windows Authentication will be used if DestinationSqlCredential is not specified. SQL Server does not accept Windows credentials being passed as credentials.
-
-            To connect as a different Windows user, run PowerShell as that user.
+            Login to the target instance using alternative credentials. Windows and SQL Authentication supported. Accepts credential objects (Get-Credential)
 
         .PARAMETER DestinationDatabase
             The database name at destination.
@@ -67,12 +55,12 @@ function Measure-DbaDiskSpaceRequirement {
               [PSCustomObject]@{Source='SQL1';Destination='SQL2';Database='DB2'}
             ) | Measure-DbaDiskSpaceRequirement
 
-            Using a PSCustomObject with 2 databases to migrate on SQL2
+            Using a PSCustomObject with 2 databases to migrate on SQL2.
 
         .EXAMPLE
             Import-Csv -Path .\migration.csv -Delimiter "`t" | Measure-DbaDiskSpaceRequirement | Format-Table -AutoSize
 
-            Using a CSV file. You will need to use this header line "Source<tab>Destination<tab>Database<tab>DestinationDatabase"
+            Using a CSV file. You will need to use this header line "Source<tab>Destination<tab>Database<tab>DestinationDatabase".
 
         .EXAMPLE
             Invoke-DbaSqlCmd -SqlInstance DBA -Database Migrations -Query 'select Source, Destination, Database from dbo.Migrations' `

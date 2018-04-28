@@ -70,7 +70,8 @@ function Set-DbaTcpPort {
         [ValidateRange(1, 65535)]
         [int]$Port,
         [IpAddress[]]$IpAddress,
-        [switch][Alias('Silent')]$EnableException
+        [Alias('Silent')]
+        [switch]$EnableException
     )
 
     begin {
@@ -156,7 +157,7 @@ function Set-DbaTcpPort {
 
             }
             catch {
-                Invoke-ManagedComputerCommand -ComputerName $server.ComputerNamePhysicalNetBIOS -ScriptBlock $scriptblock -ArgumentList $Server.NetName, $wmiinstancename, $port, $IpAddress, $server.DomainInstanceName -Credential $Credential
+                Invoke-ManagedComputerCommand -ComputerName $instance.ComputerName -ScriptBlock $scriptblock -ArgumentList $Server.NetName, $wmiinstancename, $port, $IpAddress, $server.DomainInstanceName -Credential $Credential
             }
         }
     }

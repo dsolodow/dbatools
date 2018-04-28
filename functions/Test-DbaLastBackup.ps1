@@ -22,22 +22,10 @@ function Test-DbaLastBackup {
             If a different Destination server is specified, you must ensure that the database backups are on a shared location
 
         .PARAMETER SqlCredential
-            Allows you to login to servers using SQL Logins instead of Windows Authentication (AKA Integrated or Trusted). To use:
-
-            $scred = Get-Credential, then pass $scred object to the -SqlCredential parameter.
-
-            Windows Authentication will be used if SqlCredential is not specified. SQL Server does not accept Windows credentials being passed as credentials.
-
-            To connect as a different Windows user, run PowerShell as that user.
+            Login to the target instance using alternative credentials. Windows and SQL Authentication supported. Accepts credential objects (Get-Credential)
 
         .PARAMETER DestinationCredential
-            Allows you to login to servers using SQL Logins instead of Windows Authentication (AKA Integrated or Trusted). To use:
-
-            $dcred = Get-Credential, then pass this $dcred to the -DestinationCredential parameter.
-
-            Windows Authentication will be used if DestinationCredential is not specified. SQL Server does not accept Windows credentials being passed as credentials.
-
-            To connect as a different Windows user, run PowerShell as that user.
+            Login to the target instance using alternative credentials. Windows and SQL Authentication supported. Accepts credential objects (Get-Credential)
 
         .PARAMETER Database
             The database backups to test. If -Database is not provided, all database backups will be tested.
@@ -161,7 +149,8 @@ function Test-DbaLastBackup {
         [switch]$IncludeCopyOnly,
         [switch]$IgnoreLogBackup,
         [string]$AzureCredential,
-        [switch][Alias('Silent')]$EnableException
+        [Alias('Silent')]
+        [switch]$EnableException
     )
 
     process {
@@ -276,34 +265,41 @@ function Test-DbaLastBackup {
                         Stop-Function -Message "$dbname does not exist on $source." -Continue
                     }
 
-                    $lastbackup = Get-DbaBackupHistory -SqlInstance $sourceserver -Database $dbname -Last -IncludeCopyOnly:$IncludeCopyOnly #-raw
+                    if (Test-Bound "IgnoreLogBackup") {
+                        Write-Message -Level Verbose -Message "Skipping Log backups as requested."
+                        $lastbackup = @()
+                        $lastbackup += $full = Get-DbaBackupHistory -SqlInstance $sourceserver -Database $dbname -IncludeCopyOnly:$IncludeCopyOnly -LastFull #-raw
+                        $diff = Get-DbaBackupHistory -SqlInstance $sourceserver -Database $dbname -IncludeCopyOnly:$IncludeCopyOnly -LastDiff # -raw
+                        if ($full.start -le $diff.start) {
+                            $lastbackup += $diff
+                        }
+                    }
+                    else {
+                        $lastbackup = Get-DbaBackupHistory -SqlInstance $sourceserver -Database $dbname -IncludeCopyOnly:$IncludeCopyOnly -Last #-raw
+                    }
+
+                    if ($null -eq $lastbackup) {
+                        Write-Message -Level Verbose -Message "No backups exist for this database."
+                        $lastbackup = @{ Path = "No backups exist for this database" }
+                        $fileexists = $false
+                        $success = $restoreresult = $dbccresult = "Skipped"
+                        continue
+                    }
+
                     if ($CopyFile) {
                         try {
                             Write-Message -Level Verbose -Message "Gathering information for file copy."
                             $removearray = @()
-
-                            if (Test-Bound "IgnoreLogBackup") {
-                                Write-Message -Level Verbose -Message "Skipping Log backups as requested."
-                                $lastbackup = @()
-                                $lastbackup += $full = Get-DbaBackupHistory -SqlInstance $sourceserver -Database $dbname -IncludeCopyOnly:$IncludeCopyOnly -LastFull #-raw
-                                $diff = Get-DbaBackupHistory -SqlInstance $sourceserver -Database $dbname -IncludeCopyOnly:$IncludeCopyOnly -LastDiff # -raw
-                                if ($full.start -le $diff.start) {
-                                    $lastbackup += $diff
-                                }
-                            }
-                            else {
-                                $lastbackup = Get-DbaBackupHistory -SqlInstance $sourceserver -Database $dbname -Last -IncludeCopyOnly:$IncludeCopyOnly #-raw
-                            }
 
                             foreach ($backup in $lastbackup) {
                                 foreach ($file in $backup) {
                                     $filename = Split-Path -Path $file.FullName -Leaf
                                     Write-Message -Level Verbose -Message "Processing $filename."
 
-                                    $sourcefile = Join-AdminUnc -servername $sourceserver.ComputerNamePhysicalNetBIOS -filepath $file.Path
+                                    $sourcefile = Join-AdminUnc -servername $instance.ComputerName -filepath $file.Path
 
-                                    if ($destserver.ComputerNamePhysicalNetBIOS -ne $env:COMPUTERNAME) {
-                                        $remotedestdirectory = Join-AdminUnc -servername $destserver.ComputerNamePhysicalNetBIOS -filepath $copyPath
+                                    if ($instance.IsLocalHost) {
+                                        $remotedestdirectory = Join-AdminUnc -servername $instance.ComputerName -filepath $copyPath
                                     }
                                     else {
                                         $remotedestdirectory = $copyPath
@@ -333,12 +329,6 @@ function Test-DbaLastBackup {
                             Write-Message -Level Warning -Message "Failed to copy backups for $dbname on $instance to $destdirectory - $_."
                             $copysuccess = $false
                         }
-                    }
-                    if ($null -eq $lastbackup) {
-                        Write-Message -Level Verbose -Message "No backups exist for this database."
-                        $lastbackup = @{ Path = "No backups exist for this database" }
-                        $fileexists = $false
-                        $success = $restoreresult = $dbccresult = "Skipped"
                     }
                     if (!$copysuccess) {
                         Write-Message -Level Verbose -Message "Failed to copy backups."

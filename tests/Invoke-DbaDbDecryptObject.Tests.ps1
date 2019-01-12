@@ -1,9 +1,23 @@
-$commandname = $MyInvocation.MyCommand.Name.Replace(".Tests.ps1", "")
-Write-Host -Object "Running $PSCommandpath" -ForegroundColor Cyan
+$CommandName = $MyInvocation.MyCommand.Name.Replace(".Tests.ps1", "")
+Write-Host -Object "Running $PSCommandPath" -ForegroundColor Cyan
 . "$PSScriptRoot\constants.ps1"
 
-Describe "$commandname Unit Tests" -Tags "UnitTests" {
+Describe "$CommandName Unit Tests" -Tag 'UnitTests' {
+    Context "Validate parameters" {
+        $paramCount = 7
+        $defaultParamCount = 11
+        [object[]]$params = (Get-ChildItem function:\Invoke-DbaDbDecryptObject).Parameters.Keys
+        $knownParameters = 'SqlInstance', 'SqlCredential', 'Database', 'ObjectName', 'EncodingType', 'ExportDestination', 'EnableException'
+        It "Should contain our specific parameters" {
+            ( (Compare-Object -ReferenceObject $knownParameters -DifferenceObject $params -IncludeEqual | Where-Object SideIndicator -eq "==").Count ) | Should Be $paramCount
+        }
+        It "Should only contain $paramCount parameters" {
+            $params.Count - $defaultParamCount | Should Be $paramCount
+        }
+    }
+}
 
+Describe "$CommandName Integration Tests" -Tags "UnitTests" {
     BeforeAll {
         # Get a random value for the database name
         $random = Get-Random
@@ -98,7 +112,7 @@ END
     }
 
     Context "Decrypt Function" {
-        It "Should be successful" {
+        It -Skip "Should be successful" {
             $result = Invoke-DbaDbDecryptObject -SqlInstance $script:instance1 -Database $dbname -ObjectName DummyEncryptedFunction
             $result.Script | Should -Be $queryFunction
 
@@ -106,7 +120,7 @@ END
     }
 
     Context "Decrypt Stored Procedure" {
-        It "Should be successful" {
+        It -Skip "Should be successful" {
             $result = Invoke-DbaDbDecryptObject -SqlInstance $script:instance1 -Database $dbname -ObjectName DummyEncryptedFunctionStoredProcedure
             $result.Script | Should -Be $queryStoredProcedure
 

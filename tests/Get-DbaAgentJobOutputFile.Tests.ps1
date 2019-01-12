@@ -4,15 +4,10 @@ Write-Host -Object "Running $PSCommandpath" -ForegroundColor Cyan
 
 Describe "$CommandName Unit Tests" -Tag 'UnitTests' {
     Context "Validate parameters" {
-        $paramCount = 5
-        $defaultParamCount = 11
         [object[]]$params = (Get-ChildItem function:\Get-DbaAgentJobOutputFile).Parameters.Keys
         $knownParameters = 'SqlInstance', 'SqlCredential', 'Job', 'ExcludeJob', 'EnableException'
         It "Contains our specific parameters" {
-            ( (Compare-Object -ReferenceObject $knownParameters -DifferenceObject $params -IncludeEqual | Where-Object SideIndicator -eq "==").Count ) | Should Be $paramCount
-        }
-        It "Contains $paramCount parameters" {
-            $params.Count - $defaultParamCount | Should Be $paramCount
+            ( (Compare-Object -ReferenceObject $knownParameters -DifferenceObject $params -IncludeEqual | Where-Object SideIndicator -eq "==").Count ) | Should Be $knownParameters.Count
         }
     }
 }
@@ -22,9 +17,9 @@ Describe "$CommandName Unittests" -Tag 'UnitTests' {
         Context "Return values" {
             Mock Connect-SQLInstance -MockWith {
                 [object]@{
-                    Name      = 'SQLServerName'
-                    NetName   = 'SQLServerName'
-                    JobServer = @{
+                    Name         = 'SQLServerName'
+                    ComputerName = 'SQLServerName'
+                    JobServer    = @{
                         Jobs = @(
                             @{
                                 Name     = 'Job1'
@@ -104,4 +99,3 @@ Describe "$CommandName Unittests" -Tag 'UnitTests' {
         }
     }
 }
-

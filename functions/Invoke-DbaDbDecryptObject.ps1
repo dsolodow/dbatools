@@ -8,29 +8,24 @@ function Invoke-DbaDbDecryptObject {
         You cannot alter the object or view the definition.
         With this command you can search for the object and decrypt the it.
 
-        The comand will output the results to the console.
-        There is an option to export all the results to a folder creating .sql files
+        The command will output the results to the console.
+        There is an option to export all the results to a folder creating .sql files.
 
         Make sure the instance allowed dedicated administrator connections (DAC).
         The binary versions of the objects can only be retrieved using a DAC connection.
         You can check the DAC connection with:
         'Get-DbaSpConfigure -SqlInstance [yourinstance] -ConfigName RemoteDacConnectionsEnabled'
-        It should say 1 in the ConfiguredValue
+        It should say 1 in the ConfiguredValue.
 
         To change the configurations you can use the Set-DbaSpConfigure command:
         'Set-DbaSpConfigure -SqlInstance [yourinstance] -ConfigName RemoteDacConnectionsEnabled -Value 1'
-        In some cases you may ned to reboot the instance
+        In some cases you may need to reboot the instance.
 
     .PARAMETER SqlInstance
-        SQL Server name or SMO object representing the SQL Server to connect to
+        The target SQL Server instance
 
     .PARAMETER SqlCredential
-        Allows you to login to servers using SQL Logins as opposed to Windows Auth/Integrated/Trusted. To use:
-
-        $scred = Get-Credential, then pass $scred object to the -SqlCredential parameter.
-
-        Windows Authentication will be used if SqlCredential is not specified. SQL Server does not accept Windows credentials being passed as credentials.
-        To connect as a different Windows user, run PowerShell as that user.
+        Login to the target instance using alternative credentials. Windows and SQL Authentication supported. Accepts credential objects (Get-Credential)
 
     .PARAMETER Database
         Database to look through for the object.
@@ -39,7 +34,7 @@ function Invoke-DbaDbDecryptObject {
         The name of the object to search for in the database.
 
     .PARAMETER EncodingType
-        The encoding that's used to decrypt and encrypt values
+        The encoding that's used to decrypt and encrypt values.
 
     .PARAMETER ExportDestination
         Used for exporting the results to.
@@ -49,48 +44,52 @@ function Invoke-DbaDbDecryptObject {
         By default, when something goes wrong we try to catch it, interpret it and give you a friendly warning message.
         This avoids overwhelming you with "sea of red" exceptions, but is inconvenient because it basically disables advanced scripting.
         Using this switch turns this "nice by default" feature off and enables you to catch exceptions with your own try/catch.
-    
+
     .NOTES
-        Author: Sander Stad (@sqlstad, sqlstad.nl)
-        Tags: Log Shipping, Configuration
+        Tags: Encryption, Decrypt, Database
+        Author: Sander Stad (@sqlstad), sqlstad.nl
 
         Website: https://dbatools.io
-        Copyright: (C) Chrissy LeMaire, clemaire@gmail.com
+        Copyright: (c) 2018 by dbatools, licensed under MIT
         License: MIT https://opensource.org/licenses/MIT
 
     .LINK
         https://dbatools.io/Invoke-DbaDbDecryptObject
 
     .EXAMPLE
-    Invoke-DbaDbDecryptObject -SqlInstance SQLDB1 -Database DB1 -ObjectName Function1
+        PS C:\> Invoke-DbaDbDecryptObject -SqlInstance SQLDB1 -Database DB1 -ObjectName Function1
 
-    Decrypt objct "Function1" in DB1 of instance SQLDB1 and output the data to the user
-
-    .EXAMPLE
-    Invoke-DbaDbDecryptObject -SqlInstance SQLDB1 -Database DB1 -ObjectName Function1 -Force -ExportDestination C:\temp\decrypt
-
-    Decrypt object "Function1" in DB1 of instance SQLDB1 and output the data to the folder "C:\temp\decrypt"
+        Decrypt object "Function1" in DB1 of instance SQLDB1 and output the data to the user.
 
     .EXAMPLE
-    Invoke-DbaDbDecryptObject -SqlInstance SQLDB1 -Database DB1 -ObjectName Function1, Function2
+        PS C:\> Invoke-DbaDbDecryptObject -SqlInstance SQLDB1 -Database DB1 -ObjectName Function1 -ExportDestination C:\temp\decrypt
 
-    Decrypt objects "Function1" and "Function2" and output the data to the user
+        Decrypt object "Function1" in DB1 of instance SQLDB1 and output the data to the folder "C:\temp\decrypt".
 
     .EXAMPLE
-    "SQLDB1" | Invoke-DbaDbDecryptObject -Database DB1 -ObjectName Function1, Function2
+        PS C:\> Invoke-DbaDbDecryptObject -SqlInstance SQLDB1 -Database DB1 -ExportDestination C:\temp\decrypt
 
-    Decrypt objects "Function1" and "Function2" and output the data to the user using a pipeline for the instance
+        Decrypt all objects in DB1 of instance SQLDB1 and output the data to the folder "C:\temp\decrypt"
 
-#>
-   [CmdletBinding()]
+    .EXAMPLE
+        PS C:\> Invoke-DbaDbDecryptObject -SqlInstance SQLDB1 -Database DB1 -ObjectName Function1, Function2
+
+        Decrypt objects "Function1" and "Function2" and output the data to the user.
+
+    .EXAMPLE
+        PS C:\> "SQLDB1" | Invoke-DbaDbDecryptObject -Database DB1 -ObjectName Function1, Function2
+
+        Decrypt objects "Function1" and "Function2" and output the data to the user using a pipeline for the instance.
+
+    #>
+    [CmdletBinding()]
     param(
         [parameter(Mandatory, ValueFromPipeline)]
         [Alias("ServerInstance", "SqlServer")]
         [DbaInstanceParameter]$SqlInstance,
         [PSCredential]$SqlCredential,
-        [parameter(Mandatory = $true)]
+        [parameter(Mandatory)]
         [object[]]$Database,
-        [parameter(Mandatory = $true)]
         [string[]]$ObjectName,
         [ValidateSet('ASCII', 'UTF8')]
         [string]$EncodingType = 'ASCII',
@@ -102,11 +101,11 @@ function Invoke-DbaDbDecryptObject {
 
         function Invoke-DecryptData() {
             param(
-                [parameter(Mandatory = $true)]
+                [parameter(Mandatory)]
                 [byte[]]$Secret,
-                [parameter(Mandatory = $true)]
+                [parameter(Mandatory)]
                 [byte[]]$KnownPlain,
-                [parameter(Mandatory = $true)]
+                [parameter(Mandatory)]
                 [byte[]]$KnownSecret
             )
 
@@ -144,8 +143,7 @@ function Invoke-DbaDbDecryptObject {
         # Set the encoding
         if ($EncodingType -eq 'ASCII') {
             $encoding = [System.Text.Encoding]::ASCII
-        }
-        elseif ($EncodingType -eq 'UTF8') {
+        } elseif ($EncodingType -eq 'UTF8') {
             $encoding = [System.Text.Encoding]::UTF8
         }
 
@@ -154,8 +152,7 @@ function Invoke-DbaDbDecryptObject {
             try {
                 # Create the new destination
                 New-Item -Path $ExportDestination -ItemType Directory -Force | Out-Null
-            }
-            catch {
+            } catch {
                 Stop-Function -Message "Couldn't create destination folder $ExportDestination" -ErrorRecord $_ -Target $instance -Continue
             }
         }
@@ -177,11 +174,9 @@ function Invoke-DbaDbDecryptObject {
 
             # Try to connect to instance
             try {
-                Write-Message -Level Verbose -Message "Connecting to $instance."
                 $server = New-Object Microsoft.SqlServer.Management.Smo.Server "ADMIN:$instance"
-            }
-            catch {
-                Stop-Function -Message "Failure" -Category ConnectionError -ErrorRecord $_ -Target $instance -Continue
+            } catch {
+                Stop-Function -Message "Error occurred while establishing connection to $instance" -Category ConnectionError -ErrorRecord $_ -Target $instance -Continue
             }
 
             # Get all the databases that compare to the database parameter
@@ -189,10 +184,23 @@ function Invoke-DbaDbDecryptObject {
 
             # Loop through each of databases
             foreach ($db in $databaseCollection) {
+                # Get the objects
+                if ($ObjectName) {
+                    $storedProcedures = @($db.StoredProcedures | Where-Object {$_.Name -in $ObjectName -and $_.IsEncrypted -eq $true} | Select-Object Name, Schema, @{N = "ObjectType"; E = {'StoredProcedure'}}, @{N = "SubType"; E = {''}})
+                    $functions = @($db.UserDefinedFunctions | Where-Object {$_.Name -in $ObjectName -and $_.IsEncrypted -eq $true} | Select-Object Name, Schema, @{N = "ObjectType"; E = {"UserDefinedFunction"}}, @{N = "SubType"; E = {$_.FunctionType.ToString().Trim()}})
+                    $views = @($db.Views | Where-Object {$_.Name -in $ObjectName -and $_.IsEncrypted -eq $true} | Select-Object Name, Schema, @{N = "ObjectType"; E = {'View'}}, @{N = "SubType"; E = {''}})
+                } else {
+                    # Get all encrypted objects
+                    $storedProcedures = @($db.StoredProcedures | Where-Object {$_.IsEncrypted -eq $true} | Select-Object Name, Schema, @{N = "ObjectType"; E = {'StoredProcedure'}}, @{N = "SubType"; E = {''}})
+                    $functions = @($db.UserDefinedFunctions | Where-Object {$_.IsEncrypted -eq $true} | Select-Object Name, Schema, @{N = "ObjectType"; E = {"UserDefinedFunction"}}, @{N = "SubType"; E = {$_.FunctionType.ToString().Trim()}})
+                    $views = @($db.Views | Where-Object {$_.IsEncrypted -eq $true} | Select-Object Name, Schema, @{N = "ObjectType"; E = {'View'}}, @{N = "SubType"; E = {''}})
+                }
 
-                # Get all the objects
+                <# Get all the objects
                 $storedProcedures = @($db.StoredProcedures | Where-Object {$_.Name -in $ObjectName -and $_.IsEncrypted -eq $true} | Select-Object Name, Schema, @{N = "ObjectType"; E = {'StoredProcedure'}}, @{N = "SubType"; E = {''}})
                 $functions = @($db.UserDefinedFunctions | Where-Object {$_.Name -in $ObjectName -and $_.IsEncrypted -eq $true} | Select-Object Name, Schema, @{N = "ObjectType"; E = {"UserDefinedFunction"}}, @{N = "SubType"; E = {$_.FunctionType.ToString().Trim()}})
+                $views = @($db.Views | Where-Object {$_.Name -in $ObjectName -and $_.IsEncrypted -eq $true} | Select-Object Name, Schema, @{N = "ObjectType"; E = {'View'}}, @{N = "SubType"; E = {''}})
+                #>
 
                 # Check if there are any objects
                 if ($storedProcedures.Count -ge 1) {
@@ -200,6 +208,9 @@ function Invoke-DbaDbDecryptObject {
                 }
                 if ($functions.Count -ge 1) {
                     $objectCollection += $functions
+                }
+                if ($views.Count -ge 1) {
+                    $objectCollection += $views
                 }
 
                 # Loop through all the objects
@@ -211,8 +222,7 @@ function Invoke-DbaDbDecryptObject {
                     # Get the result of the secret query
                     try {
                         $secret = $server.Databases[$db.Name].Query($querySecret)
-                    }
-                    catch {
+                    } catch {
                         Stop-Function -Message "Couldn't retrieve secret from $instance" -ErrorRecord $_ -Target $instance -Continue
                     }
 
@@ -238,7 +248,9 @@ function Invoke-DbaDbDecryptObject {
                                         $queryKnownPlain = (" " * $secret.value.length) + "ALTER FUNCTION $($object.Schema).$($object.Name)() RETURNS @r TABLE(i INT) WITH ENCRYPTION AS BEGIN RETURN END;"
                                     }
                                 }
-
+                            }
+                            'View' {
+                                $queryKnownPlain = (" " * $secret.Value.Length) + "ALTER VIEW $($object.Schema).$($object.Name) WITH ENCRYPTION AS SELECT NULL AS [Value];"
                             }
                         }
 
@@ -246,18 +258,16 @@ function Invoke-DbaDbDecryptObject {
                         if ($queryKnownPlain) {
                             try {
                                 $knownPlain = $encoding.GetBytes(($queryKnownPlain))
-                            }
-                            catch {
+                            } catch {
                                 Stop-Function -Message "Couldn't convert the known plain to binary" -ErrorRecord $_ -Target $instance -Continue
                             }
-                        }
-                        else {
+                        } else {
                             Stop-Function -Message "Something went wrong setting up the known plain" -ErrorRecord $_ -Target $instance -Continue
                         }
 
                         # Setup the query to change the object in SQL Server and roll it back getting the encrypted version
                         $queryKnownSecret = "
-                            BEGIN TRAN;
+                            BEGIN TRANSACTION;
                                 EXEC ('$queryKnownPlain');
                                 SELECT imageval AS Value
                                 FROM sys.sysobjvalues
@@ -268,8 +278,7 @@ function Invoke-DbaDbDecryptObject {
                         # Get the result for the known encrypted
                         try {
                             $knownSecret = $server.Databases[$db.Name].Query($queryKnownSecret)
-                        }
-                        catch {
+                        } catch {
                             Stop-Function -Message "Couldn't retrieve known secret from $instance" -ErrorRecord $_ -Target $instance -Continue
                         }
 
@@ -284,8 +293,7 @@ function Invoke-DbaDbDecryptObject {
                             # Check the export destination
                             if ($ExportDestination.EndsWith("\")) {
                                 $destinationFolder = "$ExportDestination$instance\$($db.Name)\$($object.ObjectType)\"
-                            }
-                            else {
+                            } else {
                                 $destinationFolder = "$ExportDestination\$instance\$($db.Name)\$($object.ObjectType)\"
                             }
 
@@ -294,8 +302,7 @@ function Invoke-DbaDbDecryptObject {
                                 try {
                                     # Create the new destination
                                     New-Item -Path $destinationFolder -ItemType Directory -Force:$Force | Out-Null
-                                }
-                                catch {
+                                } catch {
                                     Stop-Function -Message "Couldn't create destination folder $destinationFolder" -ErrorRecord $_ -Target $instance -Continue
                                 }
                             }
@@ -306,8 +313,7 @@ function Invoke-DbaDbDecryptObject {
                             # Export the result
                             try {
                                 $result | Out-File -FilePath $filePath -Force
-                            }
-                            catch {
+                            } catch {
                                 Stop-Function -Message "Couldn't export the results of $($object.Name) to $filePath" -ErrorRecord $_ -Target $instance -Continue
                             }
 
@@ -315,23 +321,25 @@ function Invoke-DbaDbDecryptObject {
 
                         # Add the results to the custom object
                         [PSCustomObject]@{
-                                Server   = $instance
-                                Database = $db.Name
-                                Type     = $object.ObjectType
-                                Schema   = $object.Schema
-                                Name     = $object.Name
-                                FullName = "$($object.Schema).$($object.Name)"
-                                Script   = $result
-                            }
+                            ComputerName = $server.ComputerName
+                            InstanceName = $server.ServiceName
+                            SqlInstance  = $server.DomainInstanceName
+                            Database     = $db.Name
+                            Type         = $object.ObjectType
+                            Schema       = $object.Schema
+                            Name         = $object.Name
+                            FullName     = "$($object.Schema).$($object.Name)"
+                            Script       = $result
+                        }
 
                     } # end if secret
 
                 } # end for each object
 
             } # end for each database
-            
+
         } # end for each instance
-        
+
     } # process
 
     end {
